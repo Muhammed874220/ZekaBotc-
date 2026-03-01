@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZekaBot — Yapay Zeka Asistanın</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3d;
+    --accent: #7c6dfa;
+    --accent2: #fa6d9a;
+    --text: #e8e8f0;
+    --muted: #6b6b85;
+    --user-bubble: #1e1b4b;
+    --ai-bubble: #13131a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,109,250,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(250,109,154,0.1) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── API KEY SCREEN ── */
+  #key-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  #key-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(124,109,250,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(250,109,154,0.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .key-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .key-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(124,109,250,0.5));
+  }
+
+  .key-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .key-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .key-sub a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .key-sub a:hover { text-decoration: underline; }
+
+  .key-input-wrap {
+    position: relative;
+    margin-bottom: 14px;
+  }
+
+  .key-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 48px 14px 18px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .key-input:focus { border-color: var(--accent); }
+  .key-input::placeholder { color: var(--muted); letter-spacing: 0; }
+
+  .toggle-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+  }
+
+  .toggle-eye:hover { color: var(--text); }
+
+  .key-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+
+  .key-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+  .key-btn:active { transform: translateY(0); }
+
+  .key-note {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
+  }
+
+  .key-error {
+    color: #f87171;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 8px;
+    display: none;
+  }
+
+  /* ── CHAT APP ── */
+  #app { display: none; flex-direction: column; height: 100vh; }
+
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,15,0.8);
+    backdrop-filter: blur(20px);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span { font-weight: 400; opacity: 0.7; }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .change-key-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .change-key-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  #chat {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  #chat::-webkit-scrollbar { width: 4px; }
+  #chat::-webkit-scrollbar-track { background: transparent; }
+  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .message-row {
+    display: flex;
+    gap: 14px;
+    max-width: 780px;
+    margin: 0 auto;
+    width: 100%;
+    animation: fadeUp 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .message-row.user { flex-direction: row-reverse; }
+
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+
+  .avatar.ai { background: linear-gradient(135deg, #3b2fa0, #7c6dfa); color: white; }
+  .avatar.user { background: linear-gradient(135deg, #6d1b4b, #fa6d9a); color: white; }
+
+  .bubble {
+    padding: 14px 18px;
+    border-radius: 16px;
+    line-height: 1.65;
+    font-size: 0.95rem;
+    max-width: calc(100% - 60px);
+  }
+
+  .bubble.ai {
+    background: var(--ai-bubble);
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+  }
+
+  .bubble.user {
+    background: var(--user-bubble);
+    border: 1px solid rgba(124,109,250,0.3);
+    border-top-right-radius: 4px;
+  }
+
+  #welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 24px;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeUp 0.6s ease forwards;
+  }
+
+  .welcome-icon { font-size: 3.5rem; filter: drop-shadow(0 0 30px rgba(124,109,250,0.5)); }
+
+  .welcome-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .welcome-sub { color: var(--muted); font-size: 1rem; max-width: 400px; line-height: 1.7; }
+
+  .suggestions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+
+  .suggestion-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggestion-btn:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  footer {
+    position: relative;
+    z-index: 10;
+    padding: 16px 20px 24px;
+    background: rgba(10,10,15,0.9);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+  }
+
+  .input-wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 10px 10px 10px 18px;
+    transition: border-color 0.2s;
+  }
+
+  .input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,109,250,0.1); }
+
+  #user-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 300;
+    resize: none;
+    max-height: 160px;
+    min-height: 28px;
+    line-height: 1.6;
+    padding: 4px 0;
+  }
+
+  #user-input::placeholder { color: var(--muted); }
+
+  #send-btn {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: white;
+  }
+
+  #send-btn:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
+  #send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  #send-btn svg { width: 18px; height: 18px; }
+
+  .typing { display: flex; gap: 5px; align-items: center; padding: 6px 4px; }
+  .typing span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  .hint { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 10px; }
+
+  .error-msg {
+    color: #f87171;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    background: rgba(248,113,113,0.08);
+    border: 1px solid rgba(248,113,113,0.2);
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- API KEY EKRANI -->
+<div id="key-screen">
+  <div class="key-card">
+    <div class="key-icon">🔑</div>
+    <div class="key-title">ZekaBot'a Hoş Geldin</div>
+    <div class="key-sub">
+      Başlamak için ücretsiz <a href="https://console.groq.com" target="_blank">Groq API key</a> gir.<br>
+      Key sadece tarayıcında saklanır, hiçbir yere gönderilmez.
+    </div>
+    <div class="key-error" id="key-error"></div>
+    <div class="key-input-wrap">
+      <input class="key-input" id="api-key-input" type="password" placeholder="gsk_..." autocomplete="off" />
+      <button class="toggle-eye" onclick="toggleEye()" id="eye-btn">👁</button>
+    </div>
+    <button class="key-btn" onclick="startChat()">Başla →</button>
+    <p class="key-note">
+      🔒 API key sadece senin tarayıcında tutulur.<br>
+      Groq ücretsiz — kredi kartı gerekmez.
+    </p>
+  </div>
+</div>
+
+<!-- CHAT UYGULAMASI -->
+<div id="app">
+  <header>
+    <div class="logo">Zeka<span>Bot</span></div>
+    <div class="header-right">
+      <div class="status-pill"><div class="dot"></div>Groq · Llama 3.3</div>
+      <button class="change-key-btn" onclick="changeKey()">🔑 Key değiştir</button>
+    </div>
+  </header>
+
+  <div id="chat">
+    <div id="welcome">
+      <div class="welcome-icon">✦</div>
+      <div class="welcome-title">Merhaba!</div>
+      <div class="welcome-sub">Sana her konuda yardımcı olmaya hazırım. Bir şey sor ya da aşağıdan seç.</div>
+      <div class="suggestions">
+        <button class="suggestion-btn" onclick="sendSuggestion('Bana kısa bir şiir yazar mısın?')">🎵 Şiir yaz</button>
+        <button class="suggestion-btn" onclick="sendSuggestion('Python nedir, nasıl öğrenilir?')">💻 Python öğren</button>
+        <button class="suggestion-btn" onclick="sendSuggestion('Bugün motive olmak için ne yapmalıyım?')">⚡ Motivasyon</button>
+        <button class="suggestion-btn" onclick="sendSuggestion('Türkiye hakkında ilginç 3 bilgi ver')">🇹🇷 Türkiye</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="input-wrap">
+      <textarea id="user-input" placeholder="Bir şey sor..." rows="1"></textarea>
+      <button id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <p class="hint">Enter ile gönder · Shift+Enter ile yeni satır</p>
+  </footer>
+</div>
+
+<script>
+  const GROQ_MODEL = 'llama-3.3-70b-versatile';
+  let apiKey = '';
+  let messages = [];
+  let isLoading = false;
+
+  const chatEl = document.getElementById('chat');
+  const inputEl = document.getElementById('user-input');
+  const sendBtn = document.getElementById('send-btn');
+
+  // Kayıtlı key varsa yükle
+  window.addEventListener('load', () => {
+    const saved = localStorage.getItem('groq_api_key');
+    if (saved) {
+      apiKey = saved;
+      showApp();
+    }
+  });
+
+  function toggleEye() {
+    const inp = document.getElementById('api-key-input');
+    const btn = document.getElementById('eye-btn');
+    if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+    else { inp.type = 'password'; btn.textContent = '👁'; }
+  }
+
+  function startChat() {
+    const val = document.getElementById('api-key-input').value.trim();
+    const errEl = document.getElementById('key-error');
+    errEl.style.display = 'none';
+
+    if (!val || val.length < 20) {
+      errEl.textContent = '⚠️ Lütfen geçerli bir API key gir.';
+      errEl.style.color = '#f87171';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    apiKey = val;
+    localStorage.setItem('groq_api_key', apiKey);
+    showApp();
+  }
+
+  function showApp() {
+    document.getElementById('key-screen').style.display = 'none';
+    const app = document.getElementById('app');
+    app.style.display = 'flex';
+  }
+
+  function changeKey() {
+    localStorage.removeItem('groq_api_key');
+    apiKey = '';
+    messages = [];
+    document.getElementById('key-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('api-key-input').value = '';
+    document.getElementById('key-error').style.display = 'none';
+  }
+
+  // Textarea auto-resize
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  function sendSuggestion(text) {
+    inputEl.value = text;
+    sendMessage();
+  }
+
+  function addMessage(role, content, isError = false) {
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    const row = document.createElement('div');
+    row.className = 'message-row ' + role;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ' + role;
+    avatar.textContent = role === 'ai' ? 'Z' : 'S';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + role;
+
+    if (isError) {
+      bubble.innerHTML = `<div class="error-msg">⚠️ ${content}</div>`;
+    } else if (role === 'ai') {
+      bubble.innerHTML = formatText(content);
+    } else {
+      bubble.textContent = content;
+    }
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+    return bubble;
+  }
+
+  function formatText(text) {
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code style="background:rgba(124,109,250,0.15);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:0.9em">$1</code>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function showTyping() {
+    const row = document.createElement('div');
+    row.className = 'message-row ai';
+    row.id = 'typing-row';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ai';
+    avatar.textContent = 'Z';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ai';
+    bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatEl.appendChild(row);
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-row');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+
+    addMessage('user', text);
+    messages.push({ role: 'user', content: text });
+    showTyping();
+
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          max_tokens: 1024,
+          messages: [
+            { role: 'system', content: 'Sen ZekaBot\'sun — sıcak, zeki ve yardımsever bir Türkçe yapay zeka asistanısın. Kısa ve öz cevaplar ver. Gerekmedikçe uzun listeler yapma. Türkçe konuş.' },
+            ...messages
+          ]
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Groq API hatası');
+
+      const reply = data.choices?.[0]?.message?.content || 'Cevap alınamadı.';
+      messages.push({ role: 'assistant', content: reply });
+      removeTyping();
+      addMessage('ai', reply);
+
+    } catch(err) {
+      removeTyping();
+      messages.pop();
+      addMessage('ai', err.message || 'Bağlantı hatası. Lütfen tekrar dene.', true);
+    }
+
+    isLoading = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+</script>
+</body>
+</html>
