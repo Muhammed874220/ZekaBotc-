@@ -170,7 +170,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font
         <div class="ptab active" id="tab-gemini" onclick="selProv('gemini')">
           <div class="ptab-icon">🔵</div>
           <div class="ptab-name">Google Gemini</div>
-          <div class="ptab-model">gemini-2.0-flash</div>
+          <div class="ptab-model">gemini-1.5-flash-latest</div>
           <div class="ptab-free">ÜCRETSİZ</div>
         </div>
         <div class="ptab" id="tab-groq" onclick="selProv('groq')">
@@ -451,7 +451,7 @@ async function doChat(text){
 }
 
 async function callGemini(msgs,sys){
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
   const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs})});
   const d=await res.json();
   if(!res.ok)throw new Error('Gemini: '+(d.error?.message||'API hatası'));
