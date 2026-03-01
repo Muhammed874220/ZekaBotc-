@@ -397,23 +397,20 @@ async function doImage(prompt){
   addMsg('user',prompt);
   const genDiv=document.createElement('div');
   genDiv.className='t-row';genDiv.id='img-gen';
-  genDiv.innerHTML='<div class="av ai">Z</div><div class="img-gen-card"><div class="spinner"></div>Görsel oluşturuluyor... (5-10 saniye)</div>';
+  genDiv.innerHTML='<div class="av ai">Z</div><div class="img-gen-card"><div class="spinner"></div>Görsel oluşturuluyor... (10-15 saniye)</div>';
   chatEl.appendChild(genDiv);chatEl.scrollTop=chatEl.scrollHeight;
-  try{
-    const enc=encodeURIComponent(prompt+', high quality, detailed, beautiful, artistic');
-    const seed=Math.floor(Math.random()*99999);
-    const url=`https://image.pollinations.ai/prompt/${enc}?width=512&height=512&seed=${seed}&nologo=true`;
-    await new Promise((res,rej)=>{const img=new Image();img.onload=res;img.onerror=rej;img.src=url;});
-    document.getElementById('img-gen')?.remove();
-    const row=document.createElement('div');
-    row.className='msg-row ai';
-    row.innerHTML=`<div class="av ai">Z</div><div class="msg-c"><div class="bubble ai img-b"><img src="${url}" alt="${escHtml(prompt)}" loading="lazy"/></div><div class="bubble ai" style="margin-top:5px;font-size:.8rem;color:var(--text2)">🎨 "${escHtml(prompt)}" — Pollinations AI · Ücretsiz</div><div class="msg-time">${getTime()}</div></div>`;
-    chatEl.appendChild(row);chatEl.scrollTop=chatEl.scrollHeight;
-    incUsage();
-  }catch(e){
-    document.getElementById('img-gen')?.remove();
-    addMsg('ai','Görsel oluşturulamadı. Tekrar dene.',true);
-  }
+  // Pollinations direkt URL - no CORS check needed, just show the image
+  const enc=encodeURIComponent(prompt+', high quality, detailed, beautiful, artistic');
+  const seed=Math.floor(Math.random()*99999);
+  const url=`https://image.pollinations.ai/prompt/${enc}?width=512&height=512&seed=${seed}&nologo=true&enhance=true`;
+  // Wait a bit for Pollinations to generate
+  await new Promise(r=>setTimeout(r,3000));
+  document.getElementById('img-gen')?.remove();
+  const row=document.createElement('div');
+  row.className='msg-row ai';
+  row.innerHTML=`<div class="av ai">Z</div><div class="msg-c"><div class="bubble ai img-b"><img src="${url}" alt="${escHtml(prompt)}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\"color:var(--red);font-size:.85rem\">⚠️ Görsel yüklenemedi. Tekrar dene.</div>'"/></div><div class="bubble ai" style="margin-top:5px;font-size:.8rem;color:var(--text2)">🎨 \"${escHtml(prompt)}\" — Pollinations AI · Ücretsiz</div><div class="msg-time">${getTime()}</div></div>`;
+  chatEl.appendChild(row);chatEl.scrollTop=chatEl.scrollHeight;
+  incUsage();
 }
 
 const systemPrompts={
