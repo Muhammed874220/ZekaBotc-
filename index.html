@@ -321,15 +321,7 @@ body{
 @keyframes statusPulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--ok)}50%{opacity:.3;box-shadow:none}}
 
 .tb-center{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.usage-block{
-  display:flex;align-items:center;gap:8px;
-  background:var(--panel3);border:1px solid var(--rim);
-  padding:5px 13px;border-radius:100px
-}
-.usage-label{font-family:var(--f-head);font-size:.67rem;color:var(--t3);white-space:nowrap;letter-spacing:.06em;text-transform:uppercase}
-.usage-track{width:72px;height:3px;background:var(--panel4);border-radius:100px;overflow:hidden}
-.usage-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--a3),var(--a1));transition:width .5s,background .4s}
-.usage-num{font-family:var(--f-mono);font-size:.67rem;color:var(--t2);font-weight:600;white-space:nowrap}
+/* usage block removed */
 
 .tb-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .tb-btn{
@@ -651,13 +643,7 @@ body{
   background:rgba(4,4,10,.96);backdrop-filter:blur(32px);
   border-top:1px solid var(--rim)
 }
-.limit-warn{
-  max-width:880px;margin:0 auto 8px;
-  background:rgba(255,214,10,.06);border:1px solid rgba(255,214,10,.18);
-  border-radius:9px;padding:8px 13px;
-  display:none;align-items:center;gap:7px;
-  font-size:.78rem;color:var(--warn)
-}
+/* limit-warn removed */
 .input-shell{
   max-width:880px;margin:0 auto;
   background:var(--panel);border:1.5px solid var(--rim2);
@@ -825,6 +811,59 @@ kbd{
   .feat-grid{grid-template-columns:1fr 1fr}
   .hero-title{font-size:2.4rem}
 }
+
+/* ═══════════════════════════════════════════════════════════
+   IMAGE STUDIO PANEL
+═══════════════════════════════════════════════════════════ */
+.img-studio{
+  max-width:880px;margin:0 auto 8px;
+  background:var(--panel2);border:1px solid rgba(255,61,130,.2);
+  border-radius:14px;padding:12px 16px;
+  display:none;gap:12px;flex-wrap:wrap;align-items:center
+}
+.img-studio.open{display:flex}
+.studio-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
+.studio-lbl{font-family:var(--f-head);font-size:.62rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.12em}
+.studio-select{
+  background:var(--panel3);border:1px solid var(--rim2);
+  color:var(--t1);font-family:var(--f-body);font-size:.78rem;
+  padding:6px 9px;border-radius:8px;outline:none;cursor:none;transition:all .18s
+}
+.studio-select:focus{border-color:var(--a2)}
+.studio-select option{background:var(--panel);color:var(--t1)}
+.style-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sty-chip{
+  padding:4px 10px;border-radius:100px;font-size:.69rem;
+  border:1px solid var(--rim2);background:var(--panel3);
+  color:var(--t3);cursor:none;transition:all .18s;
+  font-family:var(--f-head);font-weight:600;letter-spacing:.04em
+}
+.sty-chip:hover{border-color:rgba(255,61,130,.35);color:var(--t2)}
+.sty-chip.sel{
+  background:rgba(255,61,130,.12);border-color:rgba(255,61,130,.4);
+  color:var(--a2)
+}
+.studio-toggle-btn{
+  display:flex;align-items:center;gap:6px;padding:6px 12px;
+  background:rgba(255,61,130,.08);border:1px solid rgba(255,61,130,.2);
+  border-radius:8px;color:var(--a2);font-family:var(--f-head);
+  font-size:.74rem;font-weight:600;cursor:none;transition:all .18s;
+  letter-spacing:.04em;white-space:nowrap;flex-shrink:0
+}
+.studio-toggle-btn:hover{background:rgba(255,61,130,.15)}
+.img-history{
+  max-width:880px;margin:0 auto 6px;
+  display:flex;gap:8px;overflow-x:auto;padding:2px 0
+}
+.img-history::-webkit-scrollbar{height:2px}
+.img-history::-webkit-scrollbar-thumb{background:var(--panel3)}
+.img-thumb{
+  width:60px;height:60px;border-radius:8px;flex-shrink:0;
+  object-fit:cover;border:1px solid var(--rim2);cursor:none;
+  transition:all .2s;opacity:.7
+}
+.img-thumb:hover{opacity:1;border-color:var(--a2);transform:scale(1.06)}
+
 </style>
 </head>
 <body>
@@ -993,13 +1032,7 @@ kbd{
       <div class="brand-by">by <b>Lordyağız</b></div>
       <div class="status-badge"><div class="status-dot"></div><span id="prov-lbl">Gemini Flash</span></div>
     </div>
-    <div class="tb-center">
-      <div class="usage-block" title="Bugünkü kullanım">
-        <span class="usage-label">Kullanım</span>
-        <div class="usage-track"><div class="usage-fill" id="use-fill"></div></div>
-        <span class="usage-num" id="use-num">0 / 1500</span>
-      </div>
-    </div>
+    <div class="tb-center"></div>
     <div class="tb-right">
       <button class="tb-btn" title="Komut Paleti (Ctrl+K)" onclick="openCMD()">⌘</button>
       <button class="tb-btn" title="Temizle" onclick="clearChat()">🗑️</button>
@@ -1075,6 +1108,7 @@ kbd{
       <div class="mode-bar">
         <button class="m-btn on" id="m-chat" onclick="setMode('chat')">💬 Sohbet</button>
         <button class="m-btn img-m" id="m-image" onclick="setMode('image')">🎨 Görsel</button>
+        <button class="studio-toggle-btn" id="studio-toggle" onclick="toggleStudio()" style="display:none">🎛️ Stüdyo</button>
         <button class="m-btn code-m" id="m-code" onclick="setMode('code')">💻 Tam Kod</button>
         <button class="m-btn" id="m-translate" onclick="setMode('translate')">🌐 Çeviri</button>
         <button class="m-btn" id="m-summarize" onclick="setMode('summarize')">📝 Özetle</button>
@@ -1090,7 +1124,54 @@ kbd{
 
       <!-- INPUT -->
       <div class="input-zone">
-        <div class="limit-warn" id="limit-warn">⚠️ <b>Limit dolmak üzere!</b> &nbsp;Yeni API anahtarı al.</div>
+
+        <!-- IMAGE STUDIO -->
+        <div class="img-studio" id="img-studio">
+          <div class="studio-group">
+            <span class="studio-lbl">Stil</span>
+            <div class="style-chips" id="style-chips">
+              <span class="sty-chip sel" onclick="selStyle('default',this)">✨ Otomatik</span>
+              <span class="sty-chip" onclick="selStyle('photo',this)">📷 Foto</span>
+              <span class="sty-chip" onclick="selStyle('anime',this)">🎌 Anime</span>
+              <span class="sty-chip" onclick="selStyle('oil',this)">🖼️ Yağlı Boya</span>
+              <span class="sty-chip" onclick="selStyle('watercolor',this)">🎨 Sulu Boya</span>
+              <span class="sty-chip" onclick="selStyle('digital',this)">💻 Dijital Sanat</span>
+              <span class="sty-chip" onclick="selStyle('cyberpunk',this)">🌃 Cyberpunk</span>
+              <span class="sty-chip" onclick="selStyle('fantasy',this)">🧙 Fantezi</span>
+              <span class="sty-chip" onclick="selStyle('minimal',this)">◻️ Minimal</span>
+              <span class="sty-chip" onclick="selStyle('portrait',this)">👤 Portre</span>
+            </div>
+          </div>
+          <div class="studio-group" style="flex:0;min-width:110px">
+            <span class="studio-lbl">Boyut</span>
+            <select class="studio-select" id="img-size">
+              <option value="768x512">🖼️ 768×512 (Geniş)</option>
+              <option value="512x768">📱 512×768 (Dikey)</option>
+              <option value="512x512">⬛ 512×512 (Kare)</option>
+              <option value="1024x576">🎬 1024×576 (Sinema)</option>
+              <option value="1024x1024">🔲 1024×1024 (HD Kare)</option>
+            </select>
+          </div>
+          <div class="studio-group" style="flex:0;min-width:110px">
+            <span class="studio-lbl">Model</span>
+            <select class="studio-select" id="img-model">
+              <option value="flux">⚡ Flux (En İyi)</option>
+              <option value="flux-realism">📷 Flux Realism</option>
+              <option value="flux-anime">🎌 Flux Anime</option>
+              <option value="flux-3d">🧊 Flux 3D</option>
+              <option value="turbo">🚀 Turbo (Hızlı)</option>
+            </select>
+          </div>
+          <div class="studio-group" style="flex:0;min-width:100px">
+            <span class="studio-lbl">Kalite</span>
+            <select class="studio-select" id="img-quality">
+              <option value="high">🏆 Yüksek</option>
+              <option value="ultra">💎 Ultra HD</option>
+              <option value="fast">⚡ Hızlı</option>
+            </select>
+          </div>
+        </div>
+        <div class="img-history" id="img-history" style="display:none"></div>
         <div class="input-shell">
           <textarea id="txt" placeholder="Bir şey sor..." rows="1" oninput="onType()"></textarea>
           <button class="send" id="send-b" onclick="go()" title="Gönder">
@@ -1138,10 +1219,10 @@ const S = {
   prov:'gemini',key:'',model:'gemini-1.5-flash-latest',
   temp:0.7,mode:'chat',
   hist:[],sessions:[],sessId:null,
-  usage:0,loading:false,
+  loading:false,
   cfg:{anim:true,cursor:true,syntax:true,scroll:true,sound:false,compact:false}
 };
-const LIM={gemini:1500,groq:200};
+
 const chat=document.getElementById('chat');
 const txt=document.getElementById('txt');
 const sendB=document.getElementById('send-b');
@@ -1282,8 +1363,7 @@ window.addEventListener('load',()=>{
 function loadState(){
   const p=ld('zb_p')||'gemini',k=ld('zb_k')||'';
   const today=new Date().toDateString();
-  if(ld('zb_d')!==today){sv('zb_u','0');sv('zb_d',today);S.usage=0;}
-  else S.usage=parseInt(ld('zb_u')||'0');
+  // No usage limit
   S.prov=p;
   const cfg=JSON.parse(ld('zb_cfg')||'null');
   if(cfg)S.cfg={...S.cfg,...cfg};
@@ -1389,7 +1469,7 @@ function openApp(){
     else S.model='llama-3.3-70b-versatile';
     mp.value=S.model;
   }
-  updateUsage();refreshSessions();
+  refreshSessions();
   document.getElementById('temp-sl').value=S.temp;
   chTemp(S.temp,true);
   addCursorListeners();
@@ -1405,17 +1485,7 @@ function changeKey(){
 /* ══════════════════════════════════════════════════════════
    USAGE
 ══════════════════════════════════════════════════════════ */
-function updateUsage(){
-  const lim=LIM[S.prov]||1500,pct=Math.min((S.usage/lim)*100,100);
-  const f=document.getElementById('use-fill');
-  document.getElementById('use-num').textContent=`${S.usage} / ${lim}`;
-  f.style.width=pct+'%';
-  if(pct>85)f.style.background='linear-gradient(90deg,var(--warn),var(--bad))';
-  else if(pct>65)f.style.background='linear-gradient(90deg,var(--a5),var(--warn))';
-  else f.style.background='linear-gradient(90deg,var(--a3),var(--a1))';
-  document.getElementById('limit-warn').style.display=pct>85?'flex':'none';
-}
-function incUsage(){S.usage++;sv('zb_u',S.usage);sv('zb_d',new Date().toDateString());updateUsage();}
+function incUsage(){/* limit removed */}
 
 /* ══════════════════════════════════════════════════════════
    SESSIONS
@@ -1494,7 +1564,7 @@ function exportChat(){
 }
 function nuke(){
   if(!confirm('Tüm veriler silinecek. Emin misin?'))return;
-  ['zb_k','zb_p','zb_u','zb_d','zb_sess','zb_cfg','zb_m'].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
+  ['zb_k','zb_p','zb_sess','zb_cfg','zb_m'].forEach(k=>{try{localStorage.removeItem(k);}catch{}});
   location.reload();
 }
 
@@ -1522,7 +1592,34 @@ function setMode(m){
   const b=document.getElementById('m-'+m);if(b)b.classList.add('on');
   document.getElementById('inp-hint').textContent=HINTS[m]||HINTS.chat;
   txt.placeholder=PH[m]||PH.chat;
+  // Show/hide image studio toggle
+  const st=document.getElementById('studio-toggle');
+  if(st)st.style.display=m==='image'?'flex':'none';
+  if(m!=='image'){
+    document.getElementById('img-studio').classList.remove('open');
+    document.getElementById('img-history').style.display='none';
+  }
   txt.focus();
+}
+function toggleStudio(){
+  const s=document.getElementById('img-studio');
+  s.classList.toggle('open');
+}
+let selImgStyle='default';
+function selStyle(style,el){
+  selImgStyle=style;
+  document.querySelectorAll('.sty-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function addImgToHistory(url){
+  const h=document.getElementById('img-history');
+  h.style.display='flex';
+  const img=document.createElement('img');
+  img.className='img-thumb';img.src=url;img.loading='lazy';
+  img.onclick=()=>window.open(url,'_blank');
+  img.title='Tam boyut için tıkla';
+  h.insertBefore(img,h.firstChild);
+  if(h.children.length>12)h.removeChild(h.lastChild);
 }
 function focusInput(){txt.focus();}
 
