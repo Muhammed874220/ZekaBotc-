@@ -717,18 +717,25 @@ NASIL DAVRANACAKSIN:
 - Seçenek listesi, buton, chip vs. ÇIKARTMA — sadece düz yazıyla sor
 - Örnek: "Forge mu kullanmak istiyorsun yoksa Fabric mi?" diye yaz, listeye dökme
 
+SAÇMA CEVAP KURALI — ÇOK ÖNEMLİ:
+- Eğer kullanıcı "a", "aa", "bekle", "ok", "ya", "aga", "hmm", tek harf veya anlamsız bir şey yazarsa:
+  → O soruyu TEKRAR sor, farklı kelimelerle. "Anlamadım, şöyle sorayım:" diye başla.
+  → KESİNLİKLE ##HAZIR## yazma, mod yapmaya geçme.
+  → Sadece gerçek bir cevap gelince devam et.
+- Kullanıcı konuyla ilgisiz bir şey yazarsa (örn. "hile yapabilir misin") nazikçe yönlendir: "Haha şu an mod yapıyoruz, o konuya sonra bakarız 😄 Peki modun ne yapmasını istiyorsun?"
+
 TOPLANACAK BİLGİLER (sırayla, ama doğal konuşma gibi):
-1. Modun ne yapacağı (kullanıcı zaten anlattıysa geçebilirsin)
+1. Modun ne yapacağı — net bir açıklama lazım (1-2 cümle)
 2. Loader: Forge mi Fabric mi?
 3. MC sürümü (1.20.1, 1.19.4 falan)
 4. Modun adı ne olsun?
-5. Özel özellikler — hasar değeri, efektler, özel davranışlar var mı?
-6. Crafting tarifi, achievement gibi ekstralar istiyor mu?
+5. Ekstra özellikler istiyor mu? (ateş, zehir, uçma gibi) — "Yok" da kabul edilir
+6. Crafting tarifi vs. istiyor mu? — "Hayır" da kabul edilir
 
-Tüm bilgileri topladıktan sonra tam olarak şunu yaz (başka bir şey ekleme):
+Tüm BİLGİLER GERÇEKTEN TOPLANDIKTAN sonra (hepsi anlamlı cevaplarla doldurulunca) tam olarak şunu yaz:
 ##HAZIR##
 
-O ana kadar sadece soru sor, mod kodu yazma.`,
+O ana kadar sadece soru sor, mod kodu YAZMA.`,
 
   // MC Mod kod üretme sistemi  
   mcBuild:`Sen ZekaBot Pro'nun Minecraft mod geliştirme uzmanısın — Lordyağız tarafından tasarlandın.
@@ -1009,12 +1016,30 @@ async function go(){
 /* ══════════════════════════════════════════
    MC MOD — SAF SOHBET SİSTEMİ
 ══════════════════════════════════════════ */
+
+// Saçma/anlamsız cevap mı kontrol et
+function isMeaningless(text){
+  const t=text.trim().toLowerCase();
+  // Çok kısa (1-2 karakter) veya sadece tekrar eden harfler
+  if(t.length<=2) return true;
+  // Bilinen saçma kelimeler
+  const junk=['bekle','tamam','ok','oke','yok','var','aa','ee','hm','hmm','evet','hayır','ya','yaa','aga','lan','bro','nope','uh','mh'];
+  if(junk.includes(t)) return true;
+  // Sadece aynı harf tekrarı (aaa, eeee)
+  if(/^(.)\1+$/.test(t)) return true;
+  return false;
+}
+
 async function handleMCConversation(userText){
   addMsg('user',userText,true);
   if(MC.stage==='building') return;
 
   MC.hist=MC.hist||[];
-  MC.hist.push({role:'user',content:userText});
+
+  // Saçma cevap gelirse AI'ya göndermeden önce işaretle
+  const nonsense=isMeaningless(userText);
+  // Yine de geçmişe ekle ki AI görsün ama nonsense flag'i yolla
+  MC.hist.push({role:'user',content:nonsense?`[ANLAMSIZ CEVAP: "${userText}" — Bu cevabı geçerli sayma, soruyu tekrar sor]`:userText});
 
   showTyping();
   let reply='';
