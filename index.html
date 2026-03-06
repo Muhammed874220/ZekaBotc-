@@ -1336,24 +1336,36 @@ ZORUNLU:
     jarBlob=await createJar({modName,modId,loader,mcVer,generatedCode});
     if(pb)pb.style.width='100%';addLog('✓ .jar dosyası hazır!','ok');
   }catch(e){
-    addLog('⚠️ .jar oluşturma sorunu: '+e.message,'warn');
+    console.error('JAR oluşturma hatası:',e);
+    addLog('⚠️ .jar sorunu: '+e.message,'warn');
   }
 
   await sleep(300);
   document.getElementById(bId)?.remove();
 
   // Sonuç göster
-  showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,answers});
+  showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob});
 
   // Reset MC state
   MC.stage='idle';
 }
 
 async function createJar({modName,modId,loader,mcVer,generatedCode}){
-  if(typeof JSZip==='undefined') throw new Error('JSZip yüklenmedi');
+  // JSZip kontrolü
+  if(typeof JSZip==='undefined'){
+    // JSZip yüklü değil, dinamik olarak yükle
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload=res; s.onerror=()=>rej(new Error('JSZip yüklenemedi'));
+      document.head.appendChild(s);
+    });
+  }
+  if(typeof JSZip==='undefined') throw new Error('JSZip kullanılamıyor');
+
   const zip=new JSZip();
   const fv=({'1.20.1':'47.2.0','1.19.4':'45.2.0','1.18.2':'40.2.0','1.21':'51.0.0','1.16.5':'36.2.39','1.12.2':'14.23.5.2860'})[mcVer]||'47.2.0';
-  const cn=modName.replace(/[^a-zA-Z0-9 ]/g,' ').split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1).toLowerCase():'').join('')||'CustomMod';
+  const cn=modName.replace(/[^a-zA-Z0-9 ]/g,' ').split(' ').filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1).toLowerCase()).join('')||'CustomMod';
 
   // Kod bloklarını ayıkla
   const blocks=[];
@@ -1364,55 +1376,147 @@ async function createJar({modName,modId,loader,mcVer,generatedCode}){
   }
 
   if(loader==='fabric'){
-    zip.file('build.gradle',`plugins{id 'fabric-loom' version '1.5-SNAPSHOT';id 'maven-publish'}\nversion='1.0.0'\ngroup='com.${modId}'\nrepositories{mavenCentral();maven{url 'https://maven.fabricmc.net/'}}\ndependencies{minecraft "com.mojang:minecraft:${mcVer}";mappings "net.fabricmc:yarn:${mcVer}+build.1:v2";modImplementation "net.fabricmc:fabric-loader:0.15.11";modImplementation "net.fabricmc.fabric-api:fabric-api:0.91.0+${mcVer}"}\njava{toolchain{languageVersion=JavaLanguageVersion.of(17)}}`);
-    zip.file('src/main/resources/fabric.mod.json',JSON.stringify({schemaVersion:1,id:modId,version:'1.0.0',name:modName,description:'ZekaBot Pro tarafından oluşturuldu',authors:['Lordyağız'],license:'MIT',environment:'*',entrypoints:{main:[`com.${modId}.${cn}Mod`]},depends:{fabricloader:'>=0.14.21','fabric-api':'*',minecraft:`~${mcVer}`}},null,2));
-  }else{
-    zip.file('build.gradle',`buildscript{repositories{maven{url='https://maven.minecraftforge.net'};mavenCentral()};dependencies{classpath group:'net.minecraftforge.gradle',name:'ForgeGradle',version:'6.+',changing:true}}\napply plugin:'net.minecraftforge.gradle'\nversion='1.0.0'\ngroup='com.${modId}'\njava{toolchain.languageVersion=JavaLanguageVersion.of(17)}\nminecraft{mappings channel:'official',version:'${mcVer}'}\ndependencies{minecraft 'net.minecraftforge:forge:${mcVer}-${fv}'}`);
-    zip.file('settings.gradle',`rootProject.name='${modId}'`);
-    zip.file('gradle.properties',`minecraft_version=${mcVer}\nmod_version=1.0.0\nmod_id=${modId}\nmod_name=${modName}`);
-    zip.file('src/main/resources/META-INF/mods.toml',`modLoader="javafml"\nloaderVersion="[47,)"\nlicense="MIT"\n[[mods]]\n    modId="${modId}"\n    version="1.0.0"\n    displayName="${modName}"\n    description="ZekaBot Pro tarafından oluşturuldu — Lordyağız"\n[[dependencies.${modId}]]\n    modId="forge"\n    mandatory=true\n    versionRange="[47,)"\n    ordering="NONE"\n    side="BOTH"\n[[dependencies.${modId}]]\n    modId="minecraft"\n    mandatory=true\n    versionRange="[${mcVer},)"\n    ordering="NONE"\n    side="BOTH"`);
-    zip.file('src/main/resources/pack.mcmeta',JSON.stringify({pack:{pack_format:15,description:modName}},null,2));
+    zip.file('build.gradle',
+`plugins {
+    id 'fabric-loom' version '1.5-SNAPSHOT'
+    id 'maven-publish'
+}
+version = '1.0.0'
+group = 'com.${modId}'
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.fabricmc.net/' }
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${mcVer}"
+    mappings "net.fabricmc:yarn:${mcVer}+build.1:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.15.11"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:0.91.0+${mcVer}"
+}
+java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }`);
+    zip.file('settings.gradle', `rootProject.name = '${modId}'`);
+    zip.file('gradle.properties',
+`org.gradle.jvmargs=-Xmx3G
+minecraft_version=${mcVer}
+loader_version=0.15.11
+mod_version=1.0.0`);
+    zip.file('src/main/resources/fabric.mod.json', JSON.stringify({
+      schemaVersion:1, id:modId, version:'1.0.0',
+      name:modName, description:'ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız',
+      authors:['Lordyağız / ZekaBot Pro'], license:'MIT', environment:'*',
+      entrypoints:{main:[`com.${modId}.${cn}Mod`]},
+      depends:{fabricloader:'>=0.14.21','fabric-api':'*',minecraft:`~${mcVer}`}
+    }, null, 2));
+  } else {
+    zip.file('build.gradle',
+`buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
+    }
+}
+apply plugin: 'net.minecraftforge.gradle'
+version = '1.0.0'
+group = 'com.${modId}'
+java { toolchain.languageVersion = JavaLanguageVersion.of(17) }
+minecraft {
+    mappings channel: 'official', version: '${mcVer}'
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:${mcVer}-${fv}'
+}`);
+    zip.file('settings.gradle', `rootProject.name = '${modId}'`);
+    zip.file('gradle.properties',
+`org.gradle.jvmargs=-Xmx3G
+minecraft_version=${mcVer}
+mod_version=1.0.0
+mod_id=${modId}
+mod_name=${modName}`);
+    zip.file('src/main/resources/META-INF/mods.toml',
+`modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+    modId="${modId}"
+    version="1.0.0"
+    displayName="${modName}"
+    description="ZekaBot Pro v3.2 — Lordyağız"
+
+[[dependencies.${modId}]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${modId}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[${mcVer},)"
+    ordering="NONE"
+    side="BOTH"`);
+    zip.file('src/main/resources/pack.mcmeta', JSON.stringify({pack:{pack_format:15,description:modName}},null,2));
   }
 
-  // Java dosyalarını ekle
-  let javaAdded=0;
-  blocks.forEach((b,i)=>{
-    if(b.lang==='java'||(!b.lang&&b.code.includes('public class'))){
-      const fname=b.name||(i===0?`${cn}Mod.java`:`${cn}${i}.java`);
-      const clean=fname.replace(/[^\w.]/g,'')||`Class${i}.java`;
-      zip.file(`src/main/java/com/${modId}/${clean}`,b.code);
+  // Java dosyalarını zip'e ekle
+  let javaAdded = 0;
+  blocks.forEach((b, i) => {
+    const isJava = b.lang==='java' || (!b.lang && b.code.includes('public class'));
+    const isJson = b.lang==='json';
+    if(isJava){
+      let fname = b.name || (i===0 ? `${cn}Mod.java` : `${cn}${i}.java`);
+      fname = fname.replace(/[^\w.]/g,'') || `Class${i}.java`;
+      if(!fname.endsWith('.java')) fname += '.java';
+      zip.file(`src/main/java/com/${modId}/${fname}`, b.code);
       javaAdded++;
-    }else if(b.lang==='json'&&b.name){
-      zip.file(`src/main/resources/${b.name}`,b.code);
-    }else if(b.lang==='groovy'||b.name?.endsWith('.gradle')){
-      // skip, already added
+    } else if(isJson && b.name && b.name.includes('/')){
+      zip.file(`src/main/resources/${b.name}`, b.code);
     }
   });
 
-  // Fallback Java
-  if(javaAdded===0){
-    zip.file(`src/main/java/com/${modId}/${cn}Mod.java`,
-`package com.${modId};
-import net.minecraftforge.fml.common.Mod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-/** ${modName} — ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız */
-@Mod("${modId}")
-public class ${cn}Mod {
-    public static final Logger LOGGER = LogManager.getLogger("${modId}");
-    public ${cn}Mod() {
-        LOGGER.info("${modName} yükleniyor...");
-        // Mod initialization
-        LOGGER.info("${modName} başarıyla yüklendi!");
-    }
-}`);
+  // Java dosyası bulunamadıysa fallback
+  if(javaAdded === 0){
+    const fallback = loader==='fabric'
+      ? `package com.${modId};\nimport net.fabricmc.api.ModInitializer;\nimport org.slf4j.Logger;\nimport org.slf4j.LoggerFactory;\n\n/** ${modName} — ZekaBot Pro v3.2 */\npublic class ${cn}Mod implements ModInitializer {\n    public static final String MOD_ID = "${modId}";\n    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);\n    @Override\n    public void onInitialize() {\n        LOGGER.info("${modName} yüklendi!");\n    }\n}`
+      : `package com.${modId};\nimport net.minecraftforge.fml.common.Mod;\nimport org.apache.logging.log4j.LogManager;\nimport org.apache.logging.log4j.Logger;\n\n/** ${modName} — ZekaBot Pro v3.2 */\n@Mod("${modId}")\npublic class ${cn}Mod {\n    public static final Logger LOGGER = LogManager.getLogger("${modId}");\n    public ${cn}Mod() {\n        LOGGER.info("${modName} yüklendi!");\n    }\n}`;
+    zip.file(`src/main/java/com/${modId}/${cn}Mod.java`, fallback);
   }
 
   // Lang + README
-  zip.file(`src/main/resources/assets/${modId}/lang/en_us.json`,JSON.stringify({[`item.${modId}.${modId}_item`]:modName},null,2));
-  zip.file('README.md',`# ${modName}\n\nZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız\n\n## Kurulum\n1. Minecraft ${mcVer} kur\n2. ${loader==='fabric'?'Fabric Loader kur':'Forge kur'}\n3. .jar dosyasını mods/ klasörüne koy\n4. Minecraft'ı başlat\n\n## Derleme\n\`\`\`bash\n./gradlew build\n\`\`\``);
+  const lang = {};
+  lang[`item.${modId}.${modId}_item`] = modName;
+  lang[`block.${modId}.${modId}_block`] = modName + ' Bloğu';
+  zip.file(`src/main/resources/assets/${modId}/lang/en_us.json`, JSON.stringify(lang, null, 2));
+  zip.file('README.md',
+`# ${modName}
 
-  return await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız
+
+## Kurulum
+1. Minecraft ${mcVer} kur
+2. ${loader==='fabric'?'Fabric Loader (fabricmc.net) kur':'Forge (minecraftforge.net) kur'}
+3. \`${modId}-1.0.0.jar\` dosyasını \`.minecraft/mods/\` klasörüne koy
+4. Minecraft'ı ${loader==='fabric'?'Fabric':'Forge'} profili ile başlat
+
+## Derleme
+\`\`\`bash
+./gradlew build
+\`\`\`
+Derlenmiş .jar: \`build/libs/${modId}-1.0.0.jar\`
+`);
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 }
+  });
+
+  if(!blob || blob.size < 100) throw new Error('ZIP çıktısı boş');
+  return blob;
 }
 
 function showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,answers}){
