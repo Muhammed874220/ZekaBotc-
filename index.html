@@ -5,19 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZekaBot Pro — by Lordyağız</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#04040a;--ink2:#080810;--ink3:#0d0d1a;
+  --ink:#04040a;--ink3:#0d0d1a;
   --panel:#0f0f1e;--panel2:#141428;--panel3:#191932;--panel4:#1f1f3d;
-  --glass:rgba(255,255,255,.035);--glass2:rgba(255,255,255,.06);
   --rim:rgba(255,255,255,.07);--rim2:rgba(255,255,255,.12);--rim3:rgba(255,255,255,.18);
-  --a1:#5b4fff;--a2:#ff3d82;--a3:#00f5d4;--a4:#ffd60a;--a5:#ff6b35;
-  --mc:#4CAF50;--mc2:#8BC34A;--mc3:#FF9800;--mc4:#795548;
-  --a1g:rgba(91,79,255,.18);--a2g:rgba(255,61,130,.14);--a3g:rgba(0,245,212,.1);
-  --t1:#f0f0ff;--t2:#8888bb;--t3:#4a4a7a;--t4:#28284a;--t5:#18182e;
+  --a1:#5b4fff;--a2:#ff3d82;--a3:#00f5d4;--a4:#ffd60a;
+  --mc:#4CAF50;--mc2:#8BC34A;--mc3:#FF9800;
+  --t1:#f0f0ff;--t2:#8888bb;--t3:#4a4a7a;--t4:#28284a;
   --user-bg:#130f35;--ai-bg:#0f0f1e;
   --ok:#00f5a0;--warn:#ffd60a;--bad:#ff4466;--info:#00ccff;
   --f-display:'Bebas Neue',sans-serif;
@@ -25,15 +23,14 @@
   --f-body:'Exo 2',sans-serif;
   --f-mono:'JetBrains Mono',monospace;
   --sidebar-w:260px;--topbar-h:54px;
-  --r1:24px;--r2:16px;--r3:10px;--r4:6px;
+  --r1:24px;--r2:16px;--r3:10px;
   --shadow-deep:0 32px 100px rgba(0,0,0,.8),0 8px 32px rgba(0,0,0,.5);
   --glow-a1:0 0 40px rgba(91,79,255,.3);
-  --glow-mc:0 0 40px rgba(76,175,80,.3);
+  --glow-mc:0 0 40px rgba(76,175,80,.25);
 }
 html{font-size:16px;scroll-behavior:smooth}
 body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight:400;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
 
-/* BACKGROUND */
 .bg-orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;opacity:.4;animation:orbDrift 20s ease-in-out infinite alternate}
 .bg-orb.o1{width:700px;height:700px;background:radial-gradient(circle,rgba(91,79,255,.25),transparent 70%);top:-200px;left:-150px;animation-duration:18s}
 .bg-orb.o2{width:500px;height:500px;background:radial-gradient(circle,rgba(255,61,130,.18),transparent 70%);bottom:-150px;right:-100px;animation-duration:24s;animation-delay:-8s}
@@ -42,33 +39,32 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .bg-grid-fine{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(91,79,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(91,79,255,.04) 1px,transparent 1px);background-size:32px 32px}
 .bg-scanlines{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.03;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.5) 2px,rgba(255,255,255,.5) 3px)}
 
-/* CURSOR */
 *{cursor:none!important}
-#cursor{position:fixed;z-index:9999;pointer-events:none;width:10px;height:10px;border-radius:50%;background:var(--a1);mix-blend-mode:screen;transition:transform .1s,opacity .2s;box-shadow:0 0 16px var(--a1),0 0 32px rgba(91,79,255,.5)}
-#cursor-ring{position:fixed;z-index:9998;pointer-events:none;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(91,79,255,.5);transition:transform .25s cubic-bezier(.23,1,.32,1),width .2s,height .2s,opacity .2s;transform:translate(-50%,-50%)}
+#cursor{position:fixed;z-index:9999;pointer-events:none;width:10px;height:10px;border-radius:50%;background:var(--a1);mix-blend-mode:screen;transition:transform .1s;box-shadow:0 0 16px var(--a1),0 0 32px rgba(91,79,255,.5)}
+#cursor-ring{position:fixed;z-index:9998;pointer-events:none;width:32px;height:32px;border-radius:50%;border:1.5px solid rgba(91,79,255,.5);transition:transform .25s cubic-bezier(.23,1,.32,1),width .2s,height .2s;transform:translate(-50%,-50%)}
 #cursor.clicked{transform:translate(-50%,-50%) scale(.6)}
 #cursor-ring.hovered{width:48px;height:48px;border-color:var(--a2);opacity:.7}
 
-/* SETUP SCREEN */
+/* ── SETUP ── */
 #setup-screen{position:fixed;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--ink);overflow-y:auto}
 .splash-logo{text-align:center;margin-bottom:32px;animation:splashIn .8s cubic-bezier(.16,1,.3,1) forwards}
 @keyframes splashIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
 .splash-wordmark{font-family:var(--f-display);font-size:4rem;letter-spacing:.12em;line-height:1;background:linear-gradient(135deg,var(--a1) 0%,var(--a2) 40%,var(--a3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(91,79,255,.5))}
 .splash-tagline{font-family:var(--f-head);font-size:.85rem;font-weight:600;color:var(--t3);letter-spacing:.35em;text-transform:uppercase;margin-top:6px}
-.splash-by{font-family:var(--f-mono);font-size:.72rem;color:var(--t4);margin-top:8px;letter-spacing:.1em}
+.splash-by{font-family:var(--f-mono);font-size:.72rem;color:var(--t4);margin-top:8px}
 .splash-by span{color:var(--a1);font-weight:600}
 .setup-wrap{width:100%;max-width:560px;animation:slideUp .6s .1s cubic-bezier(.16,1,.3,1) forwards;opacity:0}
 @keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
-.setup-card{background:var(--panel);border:1px solid var(--rim2);border-radius:var(--r1);overflow:hidden;box-shadow:var(--shadow-deep),0 0 0 1px rgba(255,255,255,.03),var(--glow-a1)}
-.setup-top{padding:32px 36px 26px;background:linear-gradient(160deg,rgba(91,79,255,.1) 0%,rgba(255,61,130,.06) 100%);border-bottom:1px solid var(--rim);text-align:center}
-.setup-title{font-family:var(--f-head);font-size:1.4rem;font-weight:700;color:var(--t1);margin-bottom:6px;letter-spacing:.02em}
+.setup-card{background:var(--panel);border:1px solid var(--rim2);border-radius:var(--r1);overflow:hidden;box-shadow:var(--shadow-deep),var(--glow-a1)}
+.setup-top{padding:32px 36px 26px;background:linear-gradient(160deg,rgba(91,79,255,.1),rgba(255,61,130,.06));border-bottom:1px solid var(--rim);text-align:center}
+.setup-title{font-family:var(--f-head);font-size:1.4rem;font-weight:700;color:var(--t1);margin-bottom:6px}
 .setup-desc{font-size:.85rem;color:var(--t2);line-height:1.7;font-weight:300}
 .setup-body{padding:26px 36px 30px}
 .prov-label{font-family:var(--f-head);font-size:.68rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:10px}
 .prov-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
-.prov-card{border:1.5px solid var(--rim);border-radius:var(--r2);background:var(--panel2);padding:14px 12px 12px;cursor:none;transition:all .22s;text-align:center;position:relative;overflow:hidden}
+.prov-card{border:1.5px solid var(--rim);border-radius:var(--r2);background:var(--panel2);padding:14px 12px 12px;cursor:none;transition:all .22s;text-align:center}
 .prov-card:hover{border-color:rgba(91,79,255,.3);transform:translateY(-2px)}
-.prov-card.sel{border-color:var(--a1);background:rgba(91,79,255,.08);box-shadow:0 0 24px rgba(91,79,255,.15),inset 0 1px 0 rgba(255,255,255,.05)}
+.prov-card.sel{border-color:var(--a1);background:rgba(91,79,255,.08);box-shadow:0 0 24px rgba(91,79,255,.15)}
 .prov-icon{font-size:1.5rem;margin-bottom:5px;display:block}
 .prov-name{font-family:var(--f-head);font-size:.9rem;font-weight:700}
 .prov-model{font-size:.68rem;color:var(--t3);margin-top:2px;font-family:var(--f-mono)}
@@ -79,14 +75,14 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .hint-panel.groq-hint{background:rgba(255,61,130,.05);border-color:rgba(255,61,130,.15)}
 .field-wrap{position:relative;margin-bottom:10px}
 .api-input{width:100%;background:var(--ink3);border:1.5px solid var(--rim2);border-radius:var(--r3);padding:13px 50px 13px 16px;color:var(--t1);font-family:var(--f-mono);font-size:.82rem;outline:none;transition:all .22s}
-.api-input:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(91,79,255,.12),var(--glow-a1)}
+.api-input:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(91,79,255,.12)}
 .api-input::placeholder{font-family:var(--f-body);color:var(--t3)}
 .eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--t3);cursor:none;font-size:.88rem;transition:color .18s;padding:5px}
 .eye-btn:hover{color:var(--t1)}
-.setup-err-box{background:rgba(255,68,102,.07);border:1px solid rgba(255,68,102,.2);border-radius:var(--r3);padding:9px 13px;color:var(--bad);font-size:.81rem;margin-bottom:12px;display:none;align-items:center;gap:8px;line-height:1.5}
-.btn-launch{width:100%;padding:14px;font-family:var(--f-head);font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,var(--a1) 0%,var(--a2) 100%);border:none;border-radius:var(--r3);color:#fff;cursor:none;transition:all .22s;letter-spacing:.06em;box-shadow:0 8px 32px rgba(91,79,255,.4),0 2px 8px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.1)}
-.btn-launch:hover{transform:translateY(-2px);box-shadow:0 14px 44px rgba(91,79,255,.55),var(--glow-a1)}
-.btn-test{width:100%;padding:11px;margin-top:8px;font-family:var(--f-head);font-size:.88rem;font-weight:600;background:var(--panel3);border:1.5px solid var(--rim2);border-radius:var(--r3);color:var(--t2);cursor:none;transition:all .22s;letter-spacing:.04em}
+.setup-err-box{background:rgba(255,68,102,.07);border:1px solid rgba(255,68,102,.2);border-radius:var(--r3);padding:9px 13px;color:var(--bad);font-size:.81rem;margin-bottom:12px;display:none;align-items:center;gap:8px}
+.btn-launch{width:100%;padding:14px;font-family:var(--f-head);font-size:1.05rem;font-weight:700;background:linear-gradient(135deg,var(--a1),var(--a2));border:none;border-radius:var(--r3);color:#fff;cursor:none;transition:all .22s;letter-spacing:.06em;box-shadow:0 8px 32px rgba(91,79,255,.4),inset 0 1px 0 rgba(255,255,255,.1)}
+.btn-launch:hover{transform:translateY(-2px);box-shadow:0 14px 44px rgba(91,79,255,.55)}
+.btn-test{width:100%;padding:11px;margin-top:8px;font-family:var(--f-head);font-size:.88rem;font-weight:600;background:var(--panel3);border:1.5px solid var(--rim2);border-radius:var(--r3);color:var(--t2);cursor:none;transition:all .22s}
 .btn-test:hover{border-color:rgba(91,79,255,.4);color:var(--t1)}
 .setup-footer{padding:14px 36px 18px;border-top:1px solid var(--rim);display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
 .sf-item{font-size:.72rem;color:var(--t4);display:flex;align-items:center;gap:5px}
@@ -94,14 +90,12 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .credit-strip{text-align:center;margin-top:18px;font-family:var(--f-mono);font-size:.72rem;color:var(--t4)}
 .credit-strip a{color:var(--a1);text-decoration:none}
 
-/* MAIN APP */
+/* ── APP ── */
 #app{display:none;flex-direction:column;height:100vh;position:relative;z-index:1}
-
-/* TOPBAR */
 .topbar{height:var(--topbar-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--rim);background:rgba(4,4,10,.92);backdrop-filter:blur(32px);position:relative;z-index:100;flex-shrink:0;gap:10px}
 .tb-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .brand{font-family:var(--f-display);font-size:1.35rem;letter-spacing:.12em;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;flex-shrink:0}
-.brand-by{font-family:var(--f-mono);font-size:.62rem;color:var(--t4);white-space:nowrap;letter-spacing:.05em;flex-shrink:0}
+.brand-by{font-family:var(--f-mono);font-size:.62rem;color:var(--t4);white-space:nowrap;flex-shrink:0}
 .brand-by b{color:var(--a1)}
 .status-badge{display:flex;align-items:center;gap:6px;background:var(--panel3);border:1px solid var(--rim2);padding:4px 12px;border-radius:100px;font-family:var(--f-head);font-size:.72rem;color:var(--t2);white-space:nowrap;flex-shrink:0}
 .status-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:statusPulse 2s ease-in-out infinite}
@@ -109,28 +103,24 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .tb-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .tb-btn{width:32px;height:32px;border-radius:8px;background:var(--panel2);border:1px solid var(--rim);color:var(--t2);cursor:none;transition:all .18s;display:flex;align-items:center;justify-content:center;font-size:.8rem}
 .tb-btn:hover{background:var(--panel3);color:var(--t1);border-color:var(--rim2)}
-
-/* LAYOUT */
 .app-body{display:flex;flex:1;overflow:hidden}
 
-/* SIDEBAR */
+/* ── SIDEBAR ── */
 .sidebar{width:var(--sidebar-w);flex-shrink:0;background:rgba(4,4,10,.96);border-right:1px solid var(--rim);display:flex;flex-direction:column;overflow:hidden;transition:width .3s cubic-bezier(.4,0,.2,1)}
 .sidebar.closed{width:0;border-right:none}
 .sb-head{padding:13px 13px 10px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .sb-title{font-family:var(--f-head);font-size:.72rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.12em}
-.sb-new{display:flex;align-items:center;gap:6px;margin:10px 12px 6px;padding:9px 12px;background:rgba(91,79,255,.1);border:1px solid rgba(91,79,255,.2);border-radius:var(--r3);color:var(--a1);font-family:var(--f-head);font-size:.78rem;font-weight:700;cursor:none;transition:all .18s;letter-spacing:.04em}
-.sb-new:hover{background:rgba(91,79,255,.18);border-color:rgba(91,79,255,.35)}
+.sb-new{display:flex;align-items:center;gap:6px;margin:10px 12px 6px;padding:9px 12px;background:rgba(91,79,255,.1);border:1px solid rgba(91,79,255,.2);border-radius:var(--r3);color:var(--a1);font-family:var(--f-head);font-size:.78rem;font-weight:700;cursor:none;transition:all .18s}
+.sb-new:hover{background:rgba(91,79,255,.18)}
 .sessions{flex:1;overflow-y:auto;padding:0 9px 9px}
 .sessions::-webkit-scrollbar{width:2px}
-.sessions::-webkit-scrollbar-thumb{background:var(--panel4);border-radius:2px}
-.sess-item{padding:8px 10px;border-radius:8px;cursor:none;transition:all .15s;font-size:.79rem;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;display:flex;align-items:center;gap:7px;font-family:var(--f-body)}
+.sessions::-webkit-scrollbar-thumb{background:var(--panel4)}
+.sess-item{padding:8px 10px;border-radius:8px;cursor:none;transition:all .15s;font-size:.79rem;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;display:flex;align-items:center;gap:7px}
 .sess-item:hover{background:var(--panel2);color:var(--t1);border-color:var(--rim)}
 .sess-item.active{background:rgba(91,79,255,.08);color:var(--t1);border-color:rgba(91,79,255,.2)}
-.sess-ico{font-size:.72rem;opacity:.5;flex-shrink:0}
 .sb-controls{padding:10px 12px;border-top:1px solid var(--rim);flex-shrink:0}
 .ctrl-label{font-family:var(--f-head);font-size:.62rem;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.14em;margin-bottom:7px}
 .model-pick{width:100%;background:var(--panel3);border:1px solid var(--rim2);color:var(--t2);font-family:var(--f-body);font-size:.78rem;padding:7px 10px;border-radius:8px;outline:none;cursor:none;transition:all .18s;margin-bottom:12px}
-.model-pick:focus{border-color:var(--a1);color:var(--t1)}
 .model-pick option{background:var(--panel);color:var(--t1)}
 .temp-wrap{margin-bottom:8px}
 .temp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
@@ -138,59 +128,55 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .temp-num{font-size:.7rem;color:var(--a1);font-family:var(--f-mono);font-weight:600}
 .temp-slider{-webkit-appearance:none;width:100%;height:3px;background:var(--panel4);border-radius:100px;outline:none;cursor:none}
 .temp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--a1);cursor:none;transition:transform .15s;box-shadow:0 0 8px rgba(91,79,255,.4)}
-.temp-slider::-webkit-slider-thumb:hover{transform:scale(1.35)}
 
-/* CHAT AREA */
+/* ── CHAT ── */
 .chat-col{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 #chat{flex:1;overflow-y:auto;padding:28px 18px;display:flex;flex-direction:column;gap:18px}
 #chat::-webkit-scrollbar{width:4px}
 #chat::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:4px}
-#chat::-webkit-scrollbar-thumb:hover{background:var(--panel4)}
 
-/* WELCOME */
+/* ── WELCOME ── */
 #welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:62vh;gap:28px;text-align:center;padding:20px;animation:wIn .7s cubic-bezier(.16,1,.3,1) forwards}
 @keyframes wIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 .hero-orb{position:relative;margin-bottom:8px;animation:heroFloat 6s ease-in-out infinite}
 @keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-.hero-core{width:96px;height:96px;border-radius:50%;background:conic-gradient(from 0deg,var(--a1),var(--a2),var(--a3),var(--a1));display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 60px rgba(91,79,255,.5),0 0 120px rgba(91,79,255,.2),inset 0 2px 0 rgba(255,255,255,.15);animation:heroSpin 12s linear infinite}
+.hero-core{width:96px;height:96px;border-radius:50%;background:conic-gradient(from 0deg,var(--a1),var(--a2),var(--a3),var(--a1));display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 0 60px rgba(91,79,255,.5),inset 0 2px 0 rgba(255,255,255,.15);animation:heroSpin 12s linear infinite}
 @keyframes heroSpin{to{filter:hue-rotate(360deg)}}
 .hero-ring{position:absolute;border-radius:50%;border:1px solid;animation:heroRing 3s ease-in-out infinite}
-.hr1{inset:-10px;border-color:rgba(91,79,255,.35);animation-delay:0s}
+.hr1{inset:-10px;border-color:rgba(91,79,255,.35)}
 .hr2{inset:-20px;border-color:rgba(255,61,130,.2);animation-delay:.4s}
 .hr3{inset:-32px;border-color:rgba(0,245,212,.12);animation-delay:.8s}
 @keyframes heroRing{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.06);opacity:.4}}
-.hero-title{font-family:var(--f-display);font-size:clamp(2.8rem,7vw,4.5rem);letter-spacing:.1em;line-height:.95;background:linear-gradient(135deg,var(--t1) 0%,var(--a1) 40%,var(--a2) 80%,var(--t1) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(91,79,255,.3))}
+.hero-title{font-family:var(--f-display);font-size:clamp(2.8rem,7vw,4.5rem);letter-spacing:.1em;line-height:.95;background:linear-gradient(135deg,var(--t1) 0%,var(--a1) 40%,var(--a2) 80%,var(--t1) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-sub{font-size:.92rem;color:var(--t2);max-width:440px;line-height:1.85;font-weight:300}
-.hero-credit{font-family:var(--f-mono);font-size:.73rem;color:var(--t4);margin-top:-16px;letter-spacing:.08em}
+.hero-credit{font-family:var(--f-mono);font-size:.73rem;color:var(--t4);margin-top:-16px}
 .hero-credit b{color:var(--a1)}
 .q-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:620px}
-.q-chip{display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--rim2);padding:8px 15px;border-radius:100px;font-size:.82rem;cursor:none;transition:all .22s;color:var(--t2);font-weight:400}
-.q-chip:hover{border-color:rgba(91,79,255,.4);color:var(--t1);transform:translateY(-3px);background:var(--panel3);box-shadow:0 8px 24px rgba(0,0,0,.4),0 0 20px rgba(91,79,255,.1)}
+.q-chip{display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--rim2);padding:8px 15px;border-radius:100px;font-size:.82rem;cursor:none;transition:all .22s;color:var(--t2)}
+.q-chip:hover{border-color:rgba(91,79,255,.4);color:var(--t1);transform:translateY(-3px);background:var(--panel3)}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:560px;width:100%}
-.feat-card{background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);padding:14px 12px;text-align:center;transition:all .22s;position:relative;overflow:hidden}
-.feat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(91,79,255,.06),transparent);opacity:0;transition:opacity .22s}
+.feat-card{background:var(--panel);border:1px solid var(--rim);border-radius:var(--r2);padding:14px 12px;text-align:center;transition:all .22s}
 .feat-card:hover{border-color:var(--rim2);transform:translateY(-2px)}
-.feat-card:hover::before{opacity:1}
 .feat-ico{font-size:1.4rem;margin-bottom:6px}
 .feat-name{font-family:var(--f-head);font-size:.76rem;font-weight:700;color:var(--t1);margin-bottom:3px}
 .feat-desc{font-size:.67rem;color:var(--t3);line-height:1.5}
 
-/* MESSAGES */
+/* ── MESSAGES ── */
 .msg-wrap{max-width:880px;margin:0 auto;width:100%;animation:msgIn .3s ease forwards;opacity:0}
 @keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .msg-row{display:flex;gap:10px;align-items:flex-start}
 .msg-row.user-r{flex-direction:row-reverse}
 .av{width:34px;height:34px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-head);font-size:.78rem;font-weight:700;border:1.5px solid var(--rim2)}
 .av.ai{background:linear-gradient(135deg,#1a0a5e,var(--a1));color:#fff}
-.av.user{background:linear-gradient(135deg,#5e0a2a,var(--a2));color:#fff}
 .av.mc{background:linear-gradient(135deg,#1a3a0a,var(--mc));color:#fff}
+.av.user{background:linear-gradient(135deg,#5e0a2a,var(--a2));color:#fff}
 .msg-body{max-width:calc(100% - 48px);display:flex;flex-direction:column;gap:5px}
 .msg-row.user-r .msg-body{align-items:flex-end}
 .bbl{padding:12px 16px;border-radius:18px;font-size:.89rem;line-height:1.8;word-break:break-word}
 .bbl.ai{background:var(--ai-bg);border:1px solid var(--rim2);border-top-left-radius:4px}
+.bbl.mc-bbl{background:rgba(76,175,80,.06);border:1px solid rgba(76,175,80,.2);border-top-left-radius:4px}
 .bbl.user{background:var(--user-bg);border:1px solid rgba(91,79,255,.2);border-top-right-radius:4px}
 .bbl.err{background:rgba(255,68,102,.07);border:1px solid rgba(255,68,102,.2)}
-.bbl.mc-bbl{background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-top-left-radius:4px}
 .bbl.img-bbl{padding:6px;background:var(--panel2);border:1px solid var(--rim2)}
 .bbl.img-bbl img{width:100%;max-width:440px;border-radius:13px;display:block;transition:opacity .5s}
 .err-t{color:var(--bad);font-size:.84rem}
@@ -202,8 +188,8 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .code-hd{display:flex;align-items:center;justify-content:space-between;background:#09090f;border:1px solid var(--rim2);border-bottom:none;border-radius:10px 10px 0 0;padding:7px 12px}
 .code-hd+pre{border-top-left-radius:0;border-top-right-radius:0;margin-top:0}
 .lang-tag{background:rgba(91,79,255,.15);color:var(--a1);padding:2px 8px;border-radius:5px;font-size:.66rem;font-family:var(--f-head);font-weight:700;letter-spacing:.05em}
-.copy-code-btn{background:none;border:1px solid var(--rim);color:var(--t3);padding:3px 9px;border-radius:5px;font-size:.65rem;cursor:none;font-family:var(--f-body);transition:all .15s}
-.copy-code-btn:hover{border-color:var(--rim2);color:var(--t2)}
+.copy-code-btn{background:none;border:1px solid var(--rim);color:var(--t3);padding:3px 9px;border-radius:5px;font-size:.65rem;cursor:none;transition:all .15s}
+.copy-code-btn:hover{color:var(--t2)}
 .bbl code{font-family:var(--f-mono);font-size:.82em;background:rgba(91,79,255,.1);padding:1px 5px;border-radius:4px;color:#a0a0ff}
 .bbl pre code{background:none;padding:0;color:inherit}
 .bbl strong{font-weight:600;color:#fff}
@@ -219,199 +205,93 @@ body{background:var(--ink);color:var(--t1);font-family:var(--f-body);font-weight
 .bbl th,.bbl td{padding:8px 11px;border:1px solid var(--rim2);text-align:left}
 .bbl th{background:var(--panel2);font-family:var(--f-head);font-size:.74rem;color:var(--t2);text-transform:uppercase;letter-spacing:.06em}
 .bbl a{color:var(--a1);text-decoration:none}
-.bbl a:hover{text-decoration:underline;color:var(--a2)}
 
-/* TYPING */
+/* ── MC QUICK CHIPS (soru cevabı için tıklanabilir seçenekler) ── */
+.mc-options-row{
+  max-width:880px;margin:0 auto;width:100%;
+  display:flex;flex-wrap:wrap;gap:8px;padding:4px 0 8px 44px;
+  animation:msgIn .3s ease forwards;opacity:0
+}
+.mc-opt-chip{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 15px;border-radius:100px;
+  background:rgba(76,175,80,.07);
+  border:1.5px solid rgba(76,175,80,.2);
+  color:var(--mc);font-family:var(--f-head);
+  font-size:.8rem;font-weight:600;letter-spacing:.04em;
+  cursor:none;transition:all .2s
+}
+.mc-opt-chip:hover{background:rgba(76,175,80,.15);border-color:var(--mc);transform:translateY(-2px);box-shadow:0 6px 18px rgba(76,175,80,.2)}
+.mc-opt-chip:active{transform:translateY(0)}
+
+/* ── MC BUILD PROGRESS ── */
+.mc-build-wrap{max-width:880px;margin:0 auto;width:100%;animation:msgIn .3s ease forwards;opacity:0}
+.mc-build-card{
+  background:rgba(76,175,80,.06);
+  border:1px solid rgba(76,175,80,.2);
+  border-radius:16px;padding:20px 22px;
+  display:flex;flex-direction:column;gap:12px
+}
+.mc-build-header{display:flex;align-items:center;gap:12px}
+.mc-build-spinner{width:38px;height:38px;border:3px solid rgba(76,175,80,.12);border-top-color:var(--mc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mc-build-info .mc-build-title{font-family:var(--f-head);font-size:1rem;font-weight:700;color:#fff}
+.mc-build-info .mc-build-sub{font-size:.75rem;color:rgba(76,175,80,.7);font-family:var(--f-mono);margin-top:3px}
+.mc-prog-wrap{width:100%;height:5px;background:var(--panel4);border-radius:100px;overflow:hidden}
+.mc-prog-bar{height:100%;background:linear-gradient(90deg,#2d7a1e,var(--mc),var(--mc2));border-radius:100px;width:0%;transition:width .5s ease}
+.mc-log{font-family:var(--f-mono);font-size:.7rem;color:var(--t3);display:flex;flex-direction:column;gap:3px;max-height:80px;overflow-y:auto}
+.mc-log-line.ok{color:var(--ok)}
+.mc-log-line.info{color:var(--info)}
+.mc-log-line.warn{color:var(--warn)}
+
+/* ── MC RESULT ── */
+.mc-result-wrap{max-width:880px;margin:0 auto;width:100%;animation:msgIn .4s ease forwards;opacity:0}
+.mc-result-card{
+  background:linear-gradient(160deg,rgba(76,175,80,.09),rgba(139,195,74,.04));
+  border:1px solid rgba(76,175,80,.25);
+  border-radius:18px;padding:22px;
+  display:flex;flex-direction:column;gap:16px;
+  box-shadow:var(--shadow-deep),var(--glow-mc)
+}
+.mc-res-top{display:flex;align-items:center;gap:14px}
+.mc-res-icon{width:52px;height:52px;border-radius:13px;flex-shrink:0;background:linear-gradient(135deg,#1a5c10,var(--mc));display:flex;align-items:center;justify-content:center;font-size:1.7rem;box-shadow:0 6px 20px rgba(76,175,80,.3)}
+.mc-res-name{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:#fff}
+.mc-res-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.mc-tag{padding:2px 9px;border-radius:100px;font-size:.65rem;font-family:var(--f-head);font-weight:700;letter-spacing:.05em}
+.mc-tag.g{background:rgba(76,175,80,.15);color:var(--mc);border:1px solid rgba(76,175,80,.25)}
+.mc-tag.o{background:rgba(255,152,0,.12);color:var(--mc3);border:1px solid rgba(255,152,0,.2)}
+.mc-tag.b{background:rgba(0,188,212,.1);color:#00bcd4;border:1px solid rgba(0,188,212,.2)}
+.mc-res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc-stat{background:var(--panel2);border:1px solid var(--rim);border-radius:10px;padding:9px 12px;text-align:center}
+.mc-stat-val{font-family:var(--f-mono);font-size:.95rem;font-weight:700;color:var(--mc)}
+.mc-stat-lbl{font-size:.65rem;color:var(--t3);margin-top:2px;font-family:var(--f-head);text-transform:uppercase;letter-spacing:.05em}
+.mc-res-desc{font-size:.83rem;color:var(--t2);line-height:1.7;border-top:1px solid rgba(76,175,80,.1);padding-top:12px}
+.mc-dl-row{display:flex;gap:10px}
+.mc-dl-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:9px;padding:13px;font-family:var(--f-head);font-size:.95rem;font-weight:700;background:linear-gradient(135deg,#1a5c10,var(--mc));border:none;border-radius:12px;color:#fff;cursor:none;transition:all .22s;letter-spacing:.05em;box-shadow:0 6px 28px rgba(76,175,80,.35)}
+.mc-dl-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(76,175,80,.5)}
+.mc-dl-btn2{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;font-family:var(--f-head);font-size:.88rem;font-weight:600;background:var(--panel2);border:1.5px solid rgba(76,175,80,.25);border-radius:12px;color:var(--mc);cursor:none;transition:all .22s}
+.mc-dl-btn2:hover{background:rgba(76,175,80,.08);border-color:var(--mc)}
+.mc-install-tip{background:var(--panel);border:1px solid var(--rim);border-radius:10px;padding:12px 14px;font-size:.77rem;color:var(--t3);line-height:1.8}
+.mc-install-tip strong{color:var(--t2)}
+.mc-install-tip code{color:var(--mc);font-family:var(--f-mono);font-size:.75rem;background:rgba(76,175,80,.08);padding:1px 5px;border-radius:4px}
+
+/* ── TYPING ── */
 .typing-row{display:flex;gap:10px;align-items:flex-start;max-width:880px;margin:0 auto;width:100%}
 .typing-bbl{background:var(--ai-bg);border:1px solid var(--rim2);border-radius:18px;border-top-left-radius:4px;padding:14px 18px;display:flex;gap:6px;align-items:center}
 .t-dot{width:6px;height:6px;border-radius:50%;animation:tDot 1.4s ease-in-out infinite}
-.t-dot:nth-child(1){background:var(--a1);animation-delay:0s}
+.t-dot:nth-child(1){background:var(--a1)}
 .t-dot:nth-child(2){background:var(--a2);animation-delay:.18s}
 .t-dot:nth-child(3){background:var(--a3);animation-delay:.36s}
 @keyframes tDot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-8px);opacity:1}}
 .typing-lbl{font-size:.7rem;color:var(--t3);margin-left:5px;font-style:italic;font-family:var(--f-mono)}
 
-/* ═══════════════════════
-   MINECRAFT WIZARD UI
-═══════════════════════ */
-.mc-wizard{
-  max-width:880px;margin:0 auto;width:100%;
-  animation:msgIn .4s ease forwards;opacity:0
-}
-.mc-wizard-card{
-  background:linear-gradient(160deg,rgba(76,175,80,.08) 0%,rgba(139,195,74,.04) 100%);
-  border:1px solid rgba(76,175,80,.25);
-  border-radius:20px;overflow:hidden;
-  box-shadow:0 8px 40px rgba(0,0,0,.5),var(--glow-mc)
-}
-.mc-wizard-head{
-  padding:16px 22px;
-  background:linear-gradient(90deg,rgba(76,175,80,.15),rgba(139,195,74,.08));
-  border-bottom:1px solid rgba(76,175,80,.15);
-  display:flex;align-items:center;gap:12px
-}
-.mc-wiz-icon{
-  width:42px;height:42px;border-radius:10px;
-  background:linear-gradient(135deg,#2d5a1e,var(--mc));
-  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
-  box-shadow:0 4px 16px rgba(76,175,80,.3)
-}
-.mc-wiz-title{font-family:var(--f-head);font-size:1.05rem;font-weight:700;color:#fff}
-.mc-wiz-sub{font-size:.75rem;color:rgba(76,175,80,.8);margin-top:2px;font-family:var(--f-mono)}
-.mc-wiz-step-bar{display:flex;gap:6px;margin-left:auto;flex-shrink:0}
-.wiz-step-dot{width:8px;height:8px;border-radius:50%;background:var(--panel4);transition:all .3s}
-.wiz-step-dot.done{background:var(--mc)}
-.wiz-step-dot.active{background:var(--mc2);box-shadow:0 0 8px var(--mc2);transform:scale(1.3)}
-
-.mc-wizard-body{padding:22px}
-.mc-question{
-  font-family:var(--f-head);font-size:1rem;font-weight:700;
-  color:var(--t1);margin-bottom:6px;display:flex;align-items:center;gap:8px
-}
-.mc-qdesc{font-size:.8rem;color:var(--t3);margin-bottom:16px;line-height:1.6}
-
-/* Option grid */
-.mc-opts{display:grid;gap:9px}
-.mc-opts.cols2{grid-template-columns:1fr 1fr}
-.mc-opts.cols3{grid-template-columns:1fr 1fr 1fr}
-.mc-opt{
-  background:var(--panel2);border:1.5px solid var(--rim2);
-  border-radius:12px;padding:12px 14px;
-  cursor:none;transition:all .22s;
-  display:flex;align-items:center;gap:10px
-}
-.mc-opt:hover{border-color:rgba(76,175,80,.4);background:rgba(76,175,80,.05);transform:translateY(-2px)}
-.mc-opt.sel{border-color:var(--mc);background:rgba(76,175,80,.1);box-shadow:0 0 16px rgba(76,175,80,.15)}
-.mc-opt-ico{font-size:1.4rem;flex-shrink:0;width:32px;text-align:center}
-.mc-opt-info .mc-opt-name{font-family:var(--f-head);font-size:.88rem;font-weight:700;color:var(--t1)}
-.mc-opt-info .mc-opt-desc{font-size:.7rem;color:var(--t3);margin-top:2px}
-
-/* Input fields in wizard */
-.mc-field{
-  width:100%;background:var(--ink3);
-  border:1.5px solid var(--rim2);border-radius:10px;
-  padding:11px 14px;color:var(--t1);
-  font-family:var(--f-body);font-size:.88rem;outline:none;
-  transition:all .22s;margin-bottom:8px
-}
-.mc-field:focus{border-color:var(--mc);box-shadow:0 0 0 3px rgba(76,175,80,.12)}
-.mc-field::placeholder{color:var(--t3)}
-textarea.mc-field{resize:none;height:80px;line-height:1.6}
-
-/* Multi-select chips */
-.mc-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
-.mc-chip{
-  padding:6px 13px;border-radius:100px;font-size:.76rem;
-  border:1.5px solid var(--rim2);background:var(--panel2);
-  color:var(--t3);cursor:none;transition:all .2s;
-  font-family:var(--f-head);font-weight:600;letter-spacing:.04em;
-  display:flex;align-items:center;gap:5px
-}
-.mc-chip:hover{border-color:rgba(76,175,80,.35);color:var(--t2)}
-.mc-chip.sel{background:rgba(76,175,80,.12);border-color:var(--mc);color:var(--mc)}
-
-/* Range in wizard */
-.mc-range-wrap{margin:10px 0}
-.mc-range-row{display:flex;justify-content:space-between;margin-bottom:6px;align-items:center}
-.mc-range-lbl{font-size:.76rem;color:var(--t2);font-family:var(--f-head)}
-.mc-range-val{font-family:var(--f-mono);font-size:.75rem;color:var(--mc);font-weight:600}
-.mc-range{-webkit-appearance:none;width:100%;height:4px;background:var(--panel4);border-radius:100px;outline:none;cursor:none}
-.mc-range::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--mc);cursor:none;box-shadow:0 0 8px rgba(76,175,80,.5)}
-
-.mc-wiz-nav{display:flex;gap:10px;margin-top:20px;align-items:center}
-.mc-btn-back{
-  padding:10px 20px;font-family:var(--f-head);font-size:.88rem;font-weight:600;
-  background:var(--panel2);border:1.5px solid var(--rim2);border-radius:10px;
-  color:var(--t2);cursor:none;transition:all .2s
-}
-.mc-btn-back:hover{border-color:var(--rim3);color:var(--t1)}
-.mc-btn-next{
-  flex:1;padding:11px;font-family:var(--f-head);font-size:.92rem;font-weight:700;
-  background:linear-gradient(135deg,#2d7a1e,var(--mc));
-  border:none;border-radius:10px;color:#fff;cursor:none;
-  transition:all .22s;letter-spacing:.05em;
-  box-shadow:0 6px 24px rgba(76,175,80,.3)
-}
-.mc-btn-next:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(76,175,80,.45)}
-.mc-step-info{font-family:var(--f-mono);font-size:.68rem;color:var(--t3);margin-left:auto}
-
-/* BUILD PROGRESS */
-.mc-build-card{
-  background:rgba(76,175,80,.06);border:1px solid rgba(76,175,80,.2);
-  border-radius:14px;padding:24px;text-align:center
-}
-.mc-build-spinner{
-  width:56px;height:56px;border:3px solid rgba(76,175,80,.15);
-  border-top-color:var(--mc);border-radius:50%;
-  animation:spin .7s linear infinite;margin:0 auto 16px
-}
-.mc-build-title{font-family:var(--f-head);font-size:1.1rem;font-weight:700;color:var(--t1);margin-bottom:6px}
-.mc-build-sub{font-size:.8rem;color:var(--t3);margin-bottom:16px}
-.mc-prog-wrap{width:100%;height:6px;background:var(--panel4);border-radius:100px;overflow:hidden}
-.mc-prog-bar{height:100%;background:linear-gradient(90deg,#2d7a1e,var(--mc),var(--mc2));border-radius:100px;width:0%;transition:width .4s ease}
-.mc-log{
-  margin-top:14px;text-align:left;font-family:var(--f-mono);font-size:.7rem;
-  color:var(--t3);max-height:100px;overflow-y:auto;
-  background:var(--panel);border:1px solid var(--rim);border-radius:8px;padding:10px
-}
-.mc-log-line{margin-bottom:3px}
-.mc-log-line.ok{color:var(--ok)}
-.mc-log-line.warn{color:var(--warn)}
-.mc-log-line.info{color:var(--info)}
-
-/* MC RESULT CARD */
-.mc-result{
-  background:linear-gradient(160deg,rgba(76,175,80,.1),rgba(139,195,74,.05));
-  border:1px solid rgba(76,175,80,.3);border-radius:16px;
-  padding:22px;display:flex;flex-direction:column;gap:14px
-}
-.mc-res-header{display:flex;align-items:center;gap:14px}
-.mc-res-icon{
-  width:56px;height:56px;border-radius:14px;flex-shrink:0;
-  background:linear-gradient(135deg,#1a5c10,var(--mc));
-  display:flex;align-items:center;justify-content:center;font-size:1.8rem;
-  box-shadow:0 6px 20px rgba(76,175,80,.3)
-}
-.mc-res-name{font-family:var(--f-head);font-size:1.2rem;font-weight:700;color:#fff}
-.mc-res-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.mc-tag{
-  padding:2px 9px;border-radius:100px;font-size:.65rem;
-  font-family:var(--f-head);font-weight:700;letter-spacing:.06em
-}
-.mc-tag.green{background:rgba(76,175,80,.15);color:var(--mc);border:1px solid rgba(76,175,80,.25)}
-.mc-tag.orange{background:rgba(255,152,0,.12);color:var(--mc3);border:1px solid rgba(255,152,0,.2)}
-.mc-tag.blue{background:rgba(0,188,212,.1);color:#00bcd4;border:1px solid rgba(0,188,212,.2)}
-.mc-res-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.mc-stat{background:var(--panel2);border:1px solid var(--rim);border-radius:10px;padding:9px 12px;text-align:center}
-.mc-stat-val{font-family:var(--f-mono);font-size:.95rem;font-weight:700;color:var(--mc)}
-.mc-stat-lbl{font-size:.65rem;color:var(--t3);margin-top:2px;font-family:var(--f-head);text-transform:uppercase;letter-spacing:.06em}
-.mc-res-desc{font-size:.83rem;color:var(--t2);line-height:1.7;border-top:1px solid rgba(76,175,80,.12);padding-top:12px}
-.mc-dl-btn{
-  display:flex;align-items:center;justify-content:center;gap:10px;
-  padding:13px;font-family:var(--f-head);font-size:1rem;font-weight:700;
-  background:linear-gradient(135deg,#1a5c10,var(--mc));
-  border:none;border-radius:12px;color:#fff;cursor:none;
-  transition:all .22s;letter-spacing:.06em;
-  box-shadow:0 6px 28px rgba(76,175,80,.35),inset 0 1px 0 rgba(255,255,255,.1)
-}
-.mc-dl-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(76,175,80,.5)}
-.mc-dl-btn-secondary{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:10px;font-family:var(--f-head);font-size:.85rem;font-weight:600;
-  background:var(--panel2);border:1.5px solid rgba(76,175,80,.25);
-  border-radius:10px;color:var(--mc);cursor:none;transition:all .22s
-}
-.mc-dl-btn-secondary:hover{background:rgba(76,175,80,.08);border-color:rgba(76,175,80,.4)}
-.mc-dl-row{display:flex;gap:10px}
-
-/* IMAGE GEN CARD */
+/* ── IMG GEN ── */
 .img-gen-card{background:var(--panel2);border:1px solid var(--rim2);border-radius:14px;padding:22px;text-align:center;color:var(--t2);font-size:.84rem}
 .img-spin{width:28px;height:28px;border:2px solid var(--panel3);border-top-color:var(--a1);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
 .img-prog-wrap{width:100%;height:3px;background:var(--panel4);border-radius:100px;margin-top:12px;overflow:hidden}
 .img-prog-bar{height:100%;background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));border-radius:100px;width:0%;transition:width .3s}
-@keyframes spin{to{transform:rotate(360deg)}}
 
-/* MODE BAR */
+/* ── MODE BAR ── */
 .mode-bar{display:flex;align-items:center;gap:4px;padding:7px 14px;border-top:1px solid var(--rim);background:rgba(4,4,10,.9);backdrop-filter:blur(24px);flex-shrink:0;overflow-x:auto}
 .mode-bar::-webkit-scrollbar{display:none}
 .m-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid transparent;background:none;color:var(--t3);font-family:var(--f-head);font-size:.75rem;font-weight:600;cursor:none;transition:all .2s;white-space:nowrap;flex-shrink:0;letter-spacing:.04em}
@@ -420,57 +300,39 @@ textarea.mc-field{resize:none;height:80px;line-height:1.6}
 .m-btn.on.img-m{color:var(--a2);border-color:rgba(255,61,130,.25);background:rgba(255,61,130,.07)}
 .m-btn.on.code-m{color:var(--a3);border-color:rgba(0,245,212,.2);background:rgba(0,245,212,.06)}
 .m-btn.on.debug-m{color:var(--warn);border-color:rgba(255,214,10,.2);background:rgba(255,214,10,.06)}
-.m-btn.on.mc-m{color:var(--mc);border-color:rgba(76,175,80,.25);background:rgba(76,175,80,.08)}
+.m-btn.on.mc-m{color:var(--mc);border-color:rgba(76,175,80,.25);background:rgba(76,175,80,.07)}
 .m-sep{width:1px;height:18px;background:var(--rim2);flex-shrink:0;margin:0 2px}
 .char-ctr{font-size:.63rem;color:var(--t4);font-family:var(--f-mono);flex-shrink:0;margin-left:auto}
 
-/* INPUT ZONE */
+/* ── INPUT ── */
 .input-zone{padding:9px 14px 14px;flex-shrink:0;background:rgba(4,4,10,.96);backdrop-filter:blur(32px);border-top:1px solid var(--rim)}
+.img-studio{max-width:880px;margin:0 auto 8px;background:var(--panel2);border:1px solid rgba(255,61,130,.2);border-radius:14px;padding:12px 16px;display:none;gap:12px;flex-wrap:wrap;align-items:center}
+.img-studio.open{display:flex}
+.studio-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
+.studio-lbl{font-family:var(--f-head);font-size:.62rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.12em}
+.studio-select{background:var(--panel3);border:1px solid var(--rim2);color:var(--t1);font-family:var(--f-body);font-size:.78rem;padding:6px 9px;border-radius:8px;outline:none;cursor:none}
+.studio-select option{background:var(--panel)}
+.style-chips{display:flex;flex-wrap:wrap;gap:5px}
+.sty-chip{padding:4px 10px;border-radius:100px;font-size:.69rem;border:1px solid var(--rim2);background:var(--panel3);color:var(--t3);cursor:none;transition:all .18s;font-family:var(--f-head);font-weight:600}
+.sty-chip:hover{border-color:rgba(255,61,130,.35);color:var(--t2)}
+.sty-chip.sel{background:rgba(255,61,130,.12);border-color:rgba(255,61,130,.4);color:var(--a2)}
+.studio-toggle-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,61,130,.08);border:1px solid rgba(255,61,130,.2);border-radius:8px;color:var(--a2);font-family:var(--f-head);font-size:.74rem;font-weight:600;cursor:none;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.img-history{max-width:880px;margin:0 auto 6px;display:flex;gap:8px;overflow-x:auto;padding:2px 0}
+.img-thumb{width:60px;height:60px;border-radius:8px;flex-shrink:0;object-fit:cover;border:1px solid var(--rim2);cursor:none;transition:all .2s;opacity:.7}
+.img-thumb:hover{opacity:1;border-color:var(--a2);transform:scale(1.06)}
 .input-shell{max-width:880px;margin:0 auto;background:var(--panel);border:1.5px solid var(--rim2);border-radius:18px;padding:9px 9px 9px 16px;display:flex;align-items:flex-end;gap:7px;transition:border-color .2s,box-shadow .2s}
-.input-shell:focus-within{border-color:rgba(91,79,255,.4);box-shadow:0 0 0 3px rgba(91,79,255,.07),0 12px 40px rgba(0,0,0,.5),var(--glow-a1)}
+.input-shell:focus-within{border-color:rgba(91,79,255,.4);box-shadow:0 0 0 3px rgba(91,79,255,.07),0 12px 40px rgba(0,0,0,.5)}
 #txt{flex:1;background:transparent;border:none;outline:none;color:var(--t1);font-family:var(--f-body);font-size:.9rem;font-weight:400;resize:none;min-height:25px;max-height:180px;line-height:1.65;padding:3px 0}
 #txt::placeholder{color:var(--t3)}
 .send{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--a1),var(--a2));border:none;cursor:none;color:#fff;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;box-shadow:0 4px 18px rgba(91,79,255,.4)}
 .send:hover:not(:disabled){transform:scale(1.1);box-shadow:0 8px 28px rgba(91,79,255,.55)}
-.send:disabled{opacity:.28;cursor:none;transform:none;box-shadow:none}
+.send:disabled{opacity:.28}
 .send svg{width:15px;height:15px}
 .inp-footer{max-width:880px;margin:7px auto 0;display:flex;align-items:center;justify-content:space-between}
 .inp-hint{font-size:.67rem;color:var(--t4);font-family:var(--f-head);letter-spacing:.04em}
 .stream-ind{font-size:.67rem;color:var(--a1);display:none;font-family:var(--f-mono)}
 
-/* IMAGE STUDIO */
-.img-studio{max-width:880px;margin:0 auto 8px;background:var(--panel2);border:1px solid rgba(255,61,130,.2);border-radius:14px;padding:12px 16px;display:none;gap:12px;flex-wrap:wrap;align-items:center}
-.img-studio.open{display:flex}
-.studio-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
-.studio-lbl{font-family:var(--f-head);font-size:.62rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.12em}
-.studio-select{background:var(--panel3);border:1px solid var(--rim2);color:var(--t1);font-family:var(--f-body);font-size:.78rem;padding:6px 9px;border-radius:8px;outline:none;cursor:none;transition:all .18s}
-.studio-select:focus{border-color:var(--a2)}
-.studio-select option{background:var(--panel);color:var(--t1)}
-.style-chips{display:flex;flex-wrap:wrap;gap:5px}
-.sty-chip{padding:4px 10px;border-radius:100px;font-size:.69rem;border:1px solid var(--rim2);background:var(--panel3);color:var(--t3);cursor:none;transition:all .18s;font-family:var(--f-head);font-weight:600;letter-spacing:.04em}
-.sty-chip:hover{border-color:rgba(255,61,130,.35);color:var(--t2)}
-.sty-chip.sel{background:rgba(255,61,130,.12);border-color:rgba(255,61,130,.4);color:var(--a2)}
-.studio-toggle-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(255,61,130,.08);border:1px solid rgba(255,61,130,.2);border-radius:8px;color:var(--a2);font-family:var(--f-head);font-size:.74rem;font-weight:600;cursor:none;transition:all .18s;letter-spacing:.04em;white-space:nowrap;flex-shrink:0}
-.studio-toggle-btn:hover{background:rgba(255,61,130,.15)}
-.img-history{max-width:880px;margin:0 auto 6px;display:flex;gap:8px;overflow-x:auto;padding:2px 0}
-.img-history::-webkit-scrollbar{height:2px}
-.img-history::-webkit-scrollbar-thumb{background:var(--panel3)}
-.img-thumb{width:60px;height:60px;border-radius:8px;flex-shrink:0;object-fit:cover;border:1px solid var(--rim2);cursor:none;transition:all .2s;opacity:.7}
-.img-thumb:hover{opacity:1;border-color:var(--a2);transform:scale(1.06)}
-
-/* MC QUICK BAR */
-.mc-quick-bar{max-width:880px;margin:0 auto 8px;display:none;gap:8px;flex-wrap:wrap}
-.mc-quick-bar.open{display:flex}
-.mc-qbtn{
-  padding:7px 14px;border-radius:100px;font-size:.76rem;
-  border:1.5px solid rgba(76,175,80,.2);background:rgba(76,175,80,.06);
-  color:var(--mc);cursor:none;transition:all .2s;
-  font-family:var(--f-head);font-weight:600;letter-spacing:.04em;
-  display:flex;align-items:center;gap:6px
-}
-.mc-qbtn:hover{background:rgba(76,175,80,.12);border-color:rgba(76,175,80,.4);transform:translateY(-1px)}
-
-/* COMMAND PALETTE */
+/* ── CMD PALETTE ── */
 .cmd-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.65);backdrop-filter:blur(12px);display:none;align-items:flex-start;justify-content:center;padding-top:14vh}
 .cmd-overlay.open{display:flex}
 .cmd-box{background:var(--panel);border:1px solid var(--rim2);border-radius:20px;width:100%;max-width:580px;overflow:hidden;box-shadow:var(--shadow-deep),var(--glow-a1);animation:cmdIn .2s cubic-bezier(.16,1,.3,1)}
@@ -483,40 +345,36 @@ textarea.mc-field{resize:none;height:80px;line-height:1.6}
 .cmd-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:none;transition:all .15s}
 .cmd-item:hover,.cmd-item.sel{background:var(--panel2)}
 .cmd-item-ico{font-size:.9rem;width:24px;text-align:center;flex-shrink:0}
-.cmd-item-info{flex:1}
 .cmd-item-txt{font-size:.84rem;color:var(--t1);font-family:var(--f-head);font-weight:600}
 .cmd-item-desc{font-size:.71rem;color:var(--t3)}
 .cmd-foot{padding:8px 16px;border-top:1px solid var(--rim);font-size:.68rem;color:var(--t4);display:flex;gap:14px}
-.cmd-foot span{display:flex;align-items:center;gap:4px}
 kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border-radius:4px;font-family:var(--f-mono);font-size:.63rem}
 
-/* SETTINGS */
+/* ── SETTINGS ── */
 .settings-overlay{position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.6);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
 .settings-overlay.open{display:flex}
 .settings-box{background:var(--panel);border:1px solid var(--rim2);border-radius:24px;width:100%;max-width:500px;max-height:82vh;overflow-y:auto;box-shadow:var(--shadow-deep);animation:slideUp .3s cubic-bezier(.16,1,.3,1)}
-.settings-box::-webkit-scrollbar{width:3px}
-.settings-box::-webkit-scrollbar-thumb{background:var(--panel3)}
 .set-head{padding:20px 26px 16px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--panel);z-index:1}
-.set-title{font-family:var(--f-head);font-size:1rem;font-weight:700;letter-spacing:.04em}
+.set-title{font-family:var(--f-head);font-size:1rem;font-weight:700}
 .x-btn{width:26px;height:26px;border-radius:7px;background:var(--panel2);border:1px solid var(--rim);color:var(--t2);cursor:none;display:flex;align-items:center;justify-content:center;font-size:.78rem;transition:all .15s}
-.x-btn:hover{color:var(--t1);border-color:var(--rim2)}
+.x-btn:hover{color:var(--t1)}
 .set-body{padding:18px 26px 24px}
 .set-sec{margin-bottom:24px}
 .set-sec-title{font-family:var(--f-head);font-size:.68rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--rim)}
 .set-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
-.set-info .set-lbl{font-size:.84rem;color:var(--t1)}
-.set-info .set-desc{font-size:.72rem;color:var(--t3);margin-top:2px}
+.set-lbl{font-size:.84rem;color:var(--t1)}
+.set-desc{font-size:.72rem;color:var(--t3);margin-top:2px}
 .tog{width:40px;height:22px;background:var(--panel3);border-radius:100px;cursor:none;transition:background .2s;position:relative;flex-shrink:0;border:none}
 .tog.on{background:var(--a1);box-shadow:0 0 12px rgba(91,79,255,.4)}
 .tog::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .tog.on::after{transform:translateX(18px)}
 .set-btns{display:flex;gap:10px;flex-wrap:wrap}
 .set-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;background:var(--panel2);border:1px solid var(--rim2);border-radius:10px;color:var(--t2);font-family:var(--f-body);font-size:.81rem;cursor:none;transition:all .18s}
-.set-btn:hover{border-color:var(--rim3);color:var(--t1)}
+.set-btn:hover{color:var(--t1)}
 
-/* TOASTS */
+/* ── TOASTS ── */
 .toast-wrap{position:fixed;bottom:88px;right:18px;z-index:1000;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--panel2);border:1px solid var(--rim2);padding:10px 18px;border-radius:100px;font-size:.79rem;color:var(--t2);opacity:0;transform:translateX(22px);transition:all .32s cubic-bezier(.16,1,.3,1);box-shadow:var(--shadow-deep);white-space:nowrap;pointer-events:none;font-family:var(--f-head);letter-spacing:.03em}
+.toast{background:var(--panel2);border:1px solid var(--rim2);padding:10px 18px;border-radius:100px;font-size:.79rem;color:var(--t2);opacity:0;transform:translateX(22px);transition:all .32s cubic-bezier(.16,1,.3,1);pointer-events:none;font-family:var(--f-head)}
 .toast.show{opacity:1;transform:translateX(0)}
 .toast.ok{color:var(--ok);border-color:rgba(0,245,160,.2)}
 .toast.err{color:var(--bad);border-color:rgba(255,68,102,.2)}
@@ -525,21 +383,17 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
 
 @media(max-width:720px){
   .sidebar{display:none}
-  .setup-body,.setup-top{padding-left:22px;padding-right:22px}
   #chat{padding:14px 10px}
   .feat-grid{grid-template-columns:1fr 1fr}
-  .mc-opts.cols3{grid-template-columns:1fr 1fr}
-  .mc-res-stats{grid-template-columns:1fr 1fr}
 }
 @media(max-width:480px){
   .prov-grid{grid-template-columns:1fr 1fr}
-  .mc-opts.cols2,.mc-opts.cols3{grid-template-columns:1fr}
+  .mc-res-stats{grid-template-columns:1fr 1fr}
   .mc-dl-row{flex-direction:column}
 }
 </style>
 </head>
 <body>
-
 <div class="bg-orb o1"></div>
 <div class="bg-orb o2"></div>
 <div class="bg-orb o3"></div>
@@ -549,59 +403,32 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
 <div id="cursor-ring"></div>
 <div class="toast-wrap" id="toasts"></div>
 
-<!-- COMMAND PALETTE -->
+<!-- CMD PALETTE -->
 <div class="cmd-overlay" id="cmd-overlay" onclick="if(event.target===this)closeCMD()">
   <div class="cmd-box">
-    <div class="cmd-search">
-      <span class="cmd-ico">⌘</span>
-      <input class="cmd-inp" id="cmd-inp" placeholder="Komut veya mod ara..." oninput="filterCMD(this.value)">
+    <div class="cmd-search"><span class="cmd-ico">⌘</span>
+      <input class="cmd-inp" id="cmd-inp" placeholder="Komut ara..." oninput="filterCMD(this.value)">
     </div>
     <div class="cmd-list" id="cmd-list"></div>
-    <div class="cmd-foot">
-      <span><kbd>↑↓</kbd> Gezin</span>
-      <span><kbd>Enter</kbd> Çalıştır</span>
-      <span><kbd>Esc</kbd> Kapat</span>
-    </div>
+    <div class="cmd-foot"><span><kbd>↑↓</kbd> Gezin</span><span><kbd>Enter</kbd> Çalıştır</span><span><kbd>Esc</kbd> Kapat</span></div>
   </div>
 </div>
 
 <!-- SETTINGS -->
 <div class="settings-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
   <div class="settings-box">
-    <div class="set-head">
-      <span class="set-title">⚙️ Ayarlar</span>
-      <button class="x-btn" onclick="closeSettings()">✕</button>
-    </div>
+    <div class="set-head"><span class="set-title">⚙️ Ayarlar</span><button class="x-btn" onclick="closeSettings()">✕</button></div>
     <div class="set-body">
       <div class="set-sec">
         <div class="set-sec-title">Arayüz</div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Animasyonlar</div><div class="set-desc">Mesaj ve geçiş animasyonları</div></div>
-          <button class="tog on" id="tog-anim" onclick="togSet('anim',this)"></button>
-        </div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Özel İmleç</div><div class="set-desc">ZekaBot imleç efekti</div></div>
-          <button class="tog on" id="tog-cursor" onclick="togSet('cursor',this)"></button>
-        </div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Syntax Renklendirme</div><div class="set-desc">Kod bloklarında renk</div></div>
-          <button class="tog on" id="tog-syntax" onclick="togSet('syntax',this)"></button>
-        </div>
+        <div class="set-row"><div><div class="set-lbl">Animasyonlar</div><div class="set-desc">Mesaj geçiş efektleri</div></div><button class="tog on" id="tog-anim" onclick="togSet('anim',this)"></button></div>
+        <div class="set-row"><div><div class="set-lbl">Özel İmleç</div><div class="set-desc">ZekaBot imleç efekti</div></div><button class="tog on" id="tog-cursor" onclick="togSet('cursor',this)"></button></div>
+        <div class="set-row"><div><div class="set-lbl">Syntax Renklendirme</div><div class="set-desc">Kod bloklarında renk</div></div><button class="tog on" id="tog-syntax" onclick="togSet('syntax',this)"></button></div>
       </div>
       <div class="set-sec">
         <div class="set-sec-title">Davranış</div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Otomatik Kaydır</div><div class="set-desc">Yeni mesajlarda aşağı git</div></div>
-          <button class="tog on" id="tog-scroll" onclick="togSet('scroll',this)"></button>
-        </div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Ses Bildirimi</div><div class="set-desc">Yanıt tamamlandığında ses</div></div>
-          <button class="tog" id="tog-sound" onclick="togSet('sound',this)"></button>
-        </div>
-        <div class="set-row">
-          <div class="set-info"><div class="set-lbl">Kompakt Mod</div><div class="set-desc">Daha az boşluk</div></div>
-          <button class="tog" id="tog-compact" onclick="togSet('compact',this)"></button>
-        </div>
+        <div class="set-row"><div><div class="set-lbl">Otomatik Kaydır</div><div class="set-desc">Yeni mesajda aşağı git</div></div><button class="tog on" id="tog-scroll" onclick="togSet('scroll',this)"></button></div>
+        <div class="set-row"><div><div class="set-lbl">Ses Bildirimi</div><div class="set-desc">Yanıt tamamlandığında ses</div></div><button class="tog" id="tog-sound" onclick="togSet('sound',this)"></button></div>
       </div>
       <div class="set-sec">
         <div class="set-sec-title">Veri</div>
@@ -612,19 +439,19 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
       </div>
       <div class="set-sec">
         <div class="set-sec-title">Hakkında</div>
-        <div style="font-size:.82rem;color:var(--t2);line-height:1.8">
-          <b style="color:var(--t1)">ZekaBot Pro</b> — Lordyağız tarafından özel olarak geliştirilmiştir.<br>
-          Versiyon: <span style="color:var(--a1);font-family:var(--f-mono)">3.1.0</span><br>
+        <div style="font-size:.82rem;color:var(--t2);line-height:1.9">
+          <b style="color:var(--t1)">ZekaBot Pro</b> — Lordyağız tarafından yapıldı.<br>
+          Versiyon: <span style="color:var(--a1);font-family:var(--f-mono)">3.2.0</span><br>
           Motor: <span style="color:var(--a2)">Google Gemini</span> & <span style="color:var(--a3)">Groq</span><br>
           Görsel: <span style="color:var(--a4)">Pollinations AI (Flux)</span><br>
-          Minecraft: <span style="color:var(--mc)">Forge + Fabric Mod Builder</span>
+          Minecraft: <span style="color:var(--mc)">AI Mod Builder + JSZip .jar</span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SETUP SCREEN -->
+<!-- SETUP -->
 <div id="setup-screen">
   <div class="setup-wrap">
     <div class="splash-logo">
@@ -679,11 +506,11 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
         <div class="sf-item"><span>⚡</span> Ultra Hızlı</div>
       </div>
     </div>
-    <div class="credit-strip">Lordyağız tarafından yapıldı — ZekaBot Pro v3.1</div>
+    <div class="credit-strip">Lordyağız tarafından yapıldı — <a href="#">ZekaBot Pro v3.2</a></div>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app">
   <div class="topbar">
     <div class="tb-left">
@@ -692,13 +519,12 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
       <div class="status-badge"><div class="status-dot"></div><span id="prov-lbl">Gemini Flash</span></div>
     </div>
     <div class="tb-right">
-      <button class="tb-btn" title="Komut Paleti (Ctrl+K)" onclick="openCMD()">⌘</button>
-      <button class="tb-btn" title="Temizle" onclick="clearChat()">🗑️</button>
-      <button class="tb-btn" title="Ayarlar" onclick="openSettings()">⚙️</button>
-      <button class="tb-btn" title="API Değiştir" onclick="changeKey()">🔑</button>
+      <button class="tb-btn" title="Ctrl+K" onclick="openCMD()">⌘</button>
+      <button class="tb-btn" onclick="clearChat()">🗑️</button>
+      <button class="tb-btn" onclick="openSettings()">⚙️</button>
+      <button class="tb-btn" onclick="changeKey()">🔑</button>
     </div>
   </div>
-
   <div class="app-body">
     <div class="sidebar" id="sidebar">
       <div class="sb-head">
@@ -716,16 +542,13 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
             <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (yeni)</option>
           </optgroup>
           <optgroup label="── Groq / Llama ──">
-            <option value="llama-3.3-70b-versatile">Llama 3.3 70B (çok yönlü)</option>
-            <option value="llama-3.1-8b-instant">Llama 3.1 8B (ultra hızlı)</option>
-            <option value="mixtral-8x7b-32768">Mixtral 8x7B (32K ctx)</option>
+            <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+            <option value="llama-3.1-8b-instant">Llama 3.1 8B (hızlı)</option>
+            <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
           </optgroup>
         </select>
         <div class="temp-wrap">
-          <div class="temp-row">
-            <span class="temp-lbl">Yaratıcılık</span>
-            <span class="temp-num" id="temp-num">0.7</span>
-          </div>
+          <div class="temp-row"><span class="temp-lbl">Yaratıcılık</span><span class="temp-num" id="temp-num">0.7</span></div>
           <input type="range" class="temp-slider" id="temp-sl" min="0" max="2" step="0.1" value="0.7" oninput="chTemp(this.value)">
         </div>
       </div>
@@ -739,28 +562,27 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
             <div class="hero-core">✦</div>
           </div>
           <div class="hero-title">ZEKABOT PRO</div>
-          <div class="hero-credit">Lordyağız tarafından geliştirildi · v3.1</div>
+          <div class="hero-credit">Lordyağız tarafından geliştirildi · v3.2</div>
           <div class="hero-sub">Kod yaz, görsel oluştur, Minecraft mod yap —<br>tüm güç tek yerde.</div>
           <div class="q-chips">
-            <div class="q-chip" onclick="qSend('Merhaba! Sen kimsin ve beni kim yaptı? Kendini tanıt.')">🤖 Kimsin?</div>
+            <div class="q-chip" onclick="qSend('Merhaba! Kendini tanıt.')">🤖 Kimsin?</div>
             <div class="q-chip" onclick="setMode('image');focusInput()">🎨 Görsel Oluştur</div>
-            <div class="q-chip" onclick="setMode('mcmod');startMCWizard()">⛏️ MC Mod Yap</div>
-            <div class="q-chip" onclick="qSend('Python ile tam çalışan bir web scraper yaz, BeautifulSoup kullan')">💻 Kod Yaz</div>
+            <div class="q-chip" onclick="startMCMode()">⛏️ Minecraft Mod Yap</div>
+            <div class="q-chip" onclick="qSend('Python ile tam çalışan bir web scraper yaz')">💻 Kod Yaz</div>
             <div class="q-chip" onclick="qSend('İstanbul hakkında 10 ilginç tarihi gerçek anlat')">🕌 Tarih</div>
-            <div class="q-chip" onclick="qSend('Yapay zekanın 2030 yılındaki geleceğini kapsamlı analiz et')">🔭 Analiz</div>
+            <div class="q-chip" onclick="qSend('Yapay zekanın 2030 yılındaki geleceğini analiz et')">🔭 Analiz</div>
           </div>
           <div class="feat-grid">
             <div class="feat-card"><div class="feat-ico">💬</div><div class="feat-name">Akıllı Sohbet</div><div class="feat-desc">Bağlamlı, çok turlu</div></div>
             <div class="feat-card"><div class="feat-ico">🎨</div><div class="feat-name">Görsel AI</div><div class="feat-desc">Flux + 8 stil</div></div>
             <div class="feat-card"><div class="feat-ico">💻</div><div class="feat-name">Tam Kod</div><div class="feat-desc">Eksiksiz, çalışır</div></div>
-            <div class="feat-card" style="border-color:rgba(76,175,80,.2);background:rgba(76,175,80,.04)"><div class="feat-ico">⛏️</div><div class="feat-name">MC Mod Builder</div><div class="feat-desc">Forge + Fabric .jar</div></div>
+            <div class="feat-card" style="border-color:rgba(76,175,80,.2)"><div class="feat-ico">⛏️</div><div class="feat-name">MC Mod Builder</div><div class="feat-desc">AI sorular sorar, .jar üretir</div></div>
             <div class="feat-card"><div class="feat-ico">🌐</div><div class="feat-name">Çeviri</div><div class="feat-desc">30+ dil</div></div>
             <div class="feat-card"><div class="feat-ico">🐛</div><div class="feat-name">Debug</div><div class="feat-desc">Otomatik düzeltme</div></div>
           </div>
         </div>
       </div>
 
-      <!-- MODE BAR -->
       <div class="mode-bar">
         <button class="m-btn on" id="m-chat" onclick="setMode('chat')">💬 Sohbet</button>
         <button class="m-btn img-m" id="m-image" onclick="setMode('image')">🎨 Görsel</button>
@@ -776,12 +598,11 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
         <button class="m-btn" id="m-math" onclick="setMode('math')">🧮 Matematik</button>
         <button class="m-btn" id="m-seo" onclick="setMode('seo')">📈 SEO</button>
         <div class="m-sep"></div>
-        <button class="m-btn mc-m" id="m-mcmod" onclick="setMode('mcmod');startMCWizard()">⛏️ MC Mod</button>
+        <button class="m-btn mc-m" id="m-mcmod" onclick="startMCMode()">⛏️ MC Mod</button>
         <span class="char-ctr" id="char-ctr">0</span>
       </div>
 
       <div class="input-zone">
-        <!-- IMAGE STUDIO -->
         <div class="img-studio" id="img-studio">
           <div class="studio-group">
             <span class="studio-lbl">Stil</span>
@@ -791,44 +612,30 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
               <span class="sty-chip" onclick="selStyle('anime',this)">🎌 Anime</span>
               <span class="sty-chip" onclick="selStyle('oil',this)">🖼️ Yağlı Boya</span>
               <span class="sty-chip" onclick="selStyle('watercolor',this)">🎨 Sulu Boya</span>
-              <span class="sty-chip" onclick="selStyle('digital',this)">💻 Dijital Sanat</span>
+              <span class="sty-chip" onclick="selStyle('digital',this)">💻 Dijital</span>
               <span class="sty-chip" onclick="selStyle('cyberpunk',this)">🌃 Cyberpunk</span>
               <span class="sty-chip" onclick="selStyle('fantasy',this)">🧙 Fantezi</span>
               <span class="sty-chip" onclick="selStyle('minimal',this)">◻️ Minimal</span>
-              <span class="sty-chip" onclick="selStyle('portrait',this)">👤 Portre</span>
             </div>
           </div>
           <div class="studio-group" style="flex:0;min-width:110px">
             <span class="studio-lbl">Boyut</span>
             <select class="studio-select" id="img-size">
-              <option value="768x512">🖼️ 768×512 (Geniş)</option>
-              <option value="512x768">📱 512×768 (Dikey)</option>
-              <option value="512x512">⬛ 512×512 (Kare)</option>
-              <option value="1024x576">🎬 1024×576 (Sinema)</option>
+              <option value="768x512">🖼️ 768×512</option>
+              <option value="512x768">📱 512×768</option>
+              <option value="512x512">⬛ 512×512</option>
+              <option value="1024x576">🎬 1024×576</option>
             </select>
           </div>
-          <div class="studio-group" style="flex:0;min-width:110px">
+          <div class="studio-group" style="flex:0;min-width:100px">
             <span class="studio-lbl">Model</span>
             <select class="studio-select" id="img-model">
-              <option value="flux">⚡ Flux (En İyi)</option>
-              <option value="flux-realism">📷 Flux Realism</option>
-              <option value="turbo">🚀 Turbo (Hızlı)</option>
+              <option value="flux">⚡ Flux</option>
+              <option value="turbo">🚀 Turbo</option>
             </select>
           </div>
         </div>
         <div class="img-history" id="img-history" style="display:none"></div>
-
-        <!-- MC QUICK BAR -->
-        <div class="mc-quick-bar" id="mc-quick-bar">
-          <button class="mc-qbtn" onclick="startMCWizard()">🧙 Mod Sihirbazı</button>
-          <button class="mc-qbtn" onclick="mcQuick('item')">⚔️ Eşya Modu</button>
-          <button class="mc-qbtn" onclick="mcQuick('block')">🧱 Blok Modu</button>
-          <button class="mc-qbtn" onclick="mcQuick('mob')">👾 Yaratık Modu</button>
-          <button class="mc-qbtn" onclick="mcQuick('tool')">🔨 Araç Modu</button>
-          <button class="mc-qbtn" onclick="mcQuick('armor')">🛡️ Zırh Modu</button>
-          <button class="mc-qbtn" onclick="mcQuick('biome')">🌿 Biyom Modu</button>
-        </div>
-
         <div class="input-shell">
           <textarea id="txt" placeholder="Bir şey sor..." rows="1" oninput="onType()"></textarea>
           <button class="send" id="send-b" onclick="go()" title="Gönder">
@@ -847,64 +654,100 @@ kbd{background:var(--panel2);border:1px solid var(--rim2);padding:1px 5px;border
 </div>
 
 <script>
-/* ═══════════════════════════════════
+/* ══════════════════════
    CURSOR
-═══════════════════════════════════ */
-const cur=document.getElementById('cursor');
-const curR=document.getElementById('cursor-ring');
+══════════════════════ */
+const cur=document.getElementById('cursor'),curR=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=(mx-5)+'px';cur.style.top=(my-5)+'px';});
-(function animCursor(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(animCursor);})();
+(function loop(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(loop);})();
 document.addEventListener('mousedown',()=>cur.classList.add('clicked'));
 document.addEventListener('mouseup',()=>cur.classList.remove('clicked'));
-document.querySelectorAll('button,a,[onclick]').forEach(el=>{
-  el.addEventListener('mouseenter',()=>curR.classList.add('hovered'));
-  el.addEventListener('mouseleave',()=>curR.classList.remove('hovered'));
-});
+function addHoverListeners(){
+  document.querySelectorAll('button,a,[onclick],.q-chip,.prov-card,.cmd-item,.sess-item,.mc-opt-chip').forEach(el=>{
+    if(el._hov)return;el._hov=true;
+    el.addEventListener('mouseenter',()=>curR.classList.add('hovered'));
+    el.addEventListener('mouseleave',()=>curR.classList.remove('hovered'));
+  });
+}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    STATE
-═══════════════════════════════════ */
+══════════════════════ */
 const S={
   prov:'gemini',key:'',model:'gemini-1.5-flash-latest',
   temp:0.7,mode:'chat',
-  hist:[],sessions:[],sessId:null,
-  loading:false,
-  cfg:{anim:true,cursor:true,syntax:true,scroll:true,sound:false,compact:false}
+  hist:[],sessions:[],sessId:null,loading:false,
+  cfg:{anim:true,cursor:true,syntax:true,scroll:true,sound:false}
 };
+// MC conversation state
+const MC={
+  active:false,    // mc mod modu açık mı
+  answers:{},      // toplanmış cevaplar
+  stage:'idle'     // idle | asking | building
+};
+
 const chat=document.getElementById('chat');
 const txt=document.getElementById('txt');
 const sendB=document.getElementById('send-b');
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    SYSTEM PROMPTS
-═══════════════════════════════════ */
+══════════════════════ */
 const SYS={
-  chat:`Sen ZekaBot Pro'sun — Lordyağız tarafından özel olarak geliştirilmiş, Türkiye'nin en gelişmiş yapay zeka asistanısın.
-Kimliğin: ZekaBot Pro v3.1, Lordyağız'ın imzasını taşıyan premium AI.
-Kişiliğin: Zeki, yardımsever, samimi, güvenilir, bazen espirili.
-Kurallar: Türkçe konuş, markdown kullan, detaylı cevaplar ver.`,
+  chat:`Sen ZekaBot Pro'sun — Lordyağız tarafından özel geliştirilmiş Türkiye'nin en gelişmiş AI asistanısın. v3.2. Türkçe konuş, markdown kullan, detaylı cevaplar ver. Samimi ve zeki ol.`,
+  code:`Sen ZekaBot Pro'nun kod uzmanısın. TAMAMEN ÇALIŞAN, EKSİKSİZ kod yaz. Asla "..." veya "devamı" yazma. Min 80 satır. Türkçe yorum ekle. Hata yönetimi zorunlu.`,
+  translate:`Çeviri uzmanısın. TR↔EN ve 30+ dil. Nüansları açıkla. Alternatifleri göster.`,
+  summarize:`Özetle: ## 📌 Ana Fikir\n## 🔑 Önemli Noktalar\n## 💡 Sonuç`,
+  analyze:`SWOT analizi yap: Güçlü/Zayıf Yönler, Fırsatlar, Tehditler, Tarihsel Bağlam, Sonuç.`,
+  creative:`Yaratıcı yazar. Şiir, hikaye, senaryo. Türkçenin güzelliklerini kullan.`,
+  debug:`Kodu analiz et: 🔴 Hatalar, ✅ Düzeltilmiş Tam Kod, ⚡ İyileştirmeler. Eksiksiz yaz.`,
+  math:`Matematik uzmanı. Adım adım çöz. Formülleri açıkla.`,
+  seo:`SEO uzmanı. Anahtar kelime, meta başlık, içerik yapısı, backlink, teknik SEO.`,
 
-  code:`Sen ZekaBot Pro'nun kod uzmanısın.
-KESİN KURALLAR: Her zaman TAMAMEN ÇALIŞAN, EKSİKSİZ kod yaz. Asla "..." yazma. Min 80-300 satır. Türkçe yorum satırları ekle. Hata yönetimi zorunlu.`,
+  // MC Mod soru sorma sistemi
+  mcAsk:`Sen ZekaBot Pro'nun Minecraft mod uzmanısın — Lordyağız tarafından yapıldın. Kullanıcıyla arkadaş gibi, samimi Türkçe konuşursun.
 
-  translate:`Sen çeviri uzmanısın. TR↔EN ve 30+ dil arası çeviri yap. Nüansları açıkla. Alternatif öneriler sun.`,
-  summarize:`Şu formatı kullan: ## 📌 Ana Fikir\n## 🔑 Önemli Noktalar\n## 💡 Sonuç`,
-  analyze:`SWOT analizi yap: Güçlü Yönler, Zayıf Yönler, Fırsatlar, Tehditler, Tarihsel Bağlam, Sonuç.`,
-  creative:`Yaratıcı yazar. Şiir, hikaye, senaryo, slogan. Türkçenin güzelliklerini kullan.`,
-  debug:`Kodu analiz et: 🔴 Hatalar, ✅ Düzeltilmiş Tam Kod, ⚡ İyileştirmeler, 📝 Özet. Eksiksiz çalışır kod yaz.`,
-  math:`Matematik uzmanı. Adım adım çöz. Formülleri açıkla. Alternatif yöntemler göster.`,
-  seo:`SEO uzmanı. Anahtar kelime analizi, meta başlık/açıklama, içerik yapısı, backlink stratejisi, teknik SEO.`,
-  mcmod:`Sen ZekaBot Pro'nun Minecraft mod geliştirme uzmanısın — Lordyağız tarafından özel olarak tasarlandın.
-GÖREV: Kullanıcının verdiği parametrelere göre tam çalışan Minecraft Java Edition modu için Java kodu üret.
-KURALLAR:
-- Forge 1.20.1 veya Fabric API için tam çalışan Java kodu yaz
-- Her dosyayı eksiksiz yaz, hiçbir satırı atlama
-- Türkçe açıklama ve yorumlar ekle
-- Mixin, EventBus, Registration, ItemProperties vs. tam implement et
-- build.gradle, fabric.mod.json veya mods.toml da dahil et
-- Modun ne yaptığını detaylıca açıkla
-Türkçe konuş.`
+GÖREV: Kullanıcı bir Minecraft modu yaptırmak istiyor. Onunla sohbet ederek gerekli bilgileri topla, sonra modu yap.
+
+NASIL DAVRANACAKSIN:
+- Her mesajda SADECE BİR soru sor, kısa ve net
+- Sanki bir arkadaşın "abi ne istiyosun" der gibi samimi ol
+- Kullanıcının yazdığından zaten anlaşılıyorsa o bilgiyi tekrar sorma
+- Seçenek listesi, buton, chip vs. ÇIKARTMA — sadece düz yazıyla sor
+- Örnek: "Forge mu kullanmak istiyorsun yoksa Fabric mi?" diye yaz, listeye dökme
+
+TOPLANACAK BİLGİLER (sırayla, ama doğal konuşma gibi):
+1. Modun ne yapacağı (kullanıcı zaten anlattıysa geçebilirsin)
+2. Loader: Forge mi Fabric mi?
+3. MC sürümü (1.20.1, 1.19.4 falan)
+4. Modun adı ne olsun?
+5. Özel özellikler — hasar değeri, efektler, özel davranışlar var mı?
+6. Crafting tarifi, achievement gibi ekstralar istiyor mu?
+
+Tüm bilgileri topladıktan sonra tam olarak şunu yaz (başka bir şey ekleme):
+##HAZIR##
+
+O ana kadar sadece soru sor, mod kodu yazma.`,
+
+  // MC Mod kod üretme sistemi  
+  mcBuild:`Sen ZekaBot Pro'nun Minecraft mod geliştirme uzmanısın — Lordyağız tarafından tasarlandın.
+
+GÖREV: Verilen parametrelere göre TAM ÇALIŞAN Minecraft Java Edition modu üret.
+
+ZORUNLU KURALLAR:
+1. Her Java dosyasını \`\`\`java [DosyaAdi.java]\`\`\` formatında yaz
+2. Hiçbir satırı atlamadan TAMAMEN yaz — "// devamı" YASAK
+3. Minimum 3 dosya: Ana mod class + Item/Block/Mob class + Registration class
+4. build.gradle veya fabric.mod.json ekle
+5. Türkçe yorum satırları ekle
+6. Crafting tarifi JSON dosyası ekle
+7. en_us.json lang dosyası ekle
+8. Forge için: @Mod, DeferredRegister, @EventBusSubscriber kullan
+9. Fabric için: ModInitializer, FabricItemSettings kullan
+10. Tooltip ile eşya bilgisi göster
+
+Türkçe açıkla, modun ne yaptığını anlat.`
 };
 
 const HINTS={
@@ -913,155 +756,39 @@ const HINTS={
   code:'💻 Ne yazmamı istediğini belirt — TAM ve EKSİKSİZ kod gelecek',
   translate:'🌐 Çevrilecek metni yaz',
   summarize:'📝 Özetlenecek metni yapıştır',
-  analyze:'🔍 Analiz edilecek konu veya metni yaz',
-  creative:'✍️ Ne yazmamı istediğini söyle',
+  analyze:'🔍 Analiz edilecek konuyu veya metni yaz',
+  creative:'✍️ Ne yazmamı istiyorsun?',
   debug:'🐛 Hatalı kodu yapıştır',
   math:'🧮 Matematik problemini yaz',
   seo:'📈 Optimize edilecek içerik veya konuyu yaz',
-  mcmod:'⛏️ Minecraft mod detaylarını yaz veya Mod Sihirbazını kullan!'
+  mcmod:'⛏️ Ne tür bir Minecraft modu istediğini anlat, sana sorular soracağım!'
 };
 const PH={
   chat:'Bir şey sor...',
   image:'"Gün batımında İstanbul boğazı, yağlı boya, sinematik ışık..."',
-  code:'"Python ile tam çalışan bir JWT auth sistemi yaz"',
+  code:'"Python ile tam çalışan bir REST API yaz"',
   translate:'Çevrilecek metni buraya yaz...',
-  summarize:'Özetlenecek metni buraya yapıştır...',
-  analyze:'Analiz edilecek konuyu veya metni yaz...',
-  creative:'Ne yazmamı istiyorsun? Şiir, hikaye, slogan...',
-  debug:'Hatalı kodu buraya yapıştır...',
+  summarize:'Özetlenecek metni yapıştır...',
+  analyze:'Analiz edilecek konuyu yaz...',
+  creative:'Ne yazmamı istiyorsun?',
+  debug:'Hatalı kodu yapıştır...',
   math:'Matematik problemini yaz...',
   seo:'Optimize edilecek içerik veya konuyu yaz...',
-  mcmod:'Mod detaylarını yaz (örn: "elmas kılıçtan güçlü, ateş fırlatır, zehir verir") veya üstteki butonları kullan'
+  mcmod:'Ne tür bir mod istiyorsun? (örn: "uçmayı sağlayan bir kılıç" veya "elmastan güçlü zırh seti")'
 };
 const IMG_S={
   default:'',anime:', anime art style, vibrant colors, detailed',
-  oil:', oil painting style, textured brushstrokes',
-  photo:', photorealistic, DSLR, 85mm f/1.4, bokeh',
-  watercolor:', delicate watercolor, soft edges, pastel tones',
-  digital:', digital concept art, artstation quality, hyper detailed',
-  minimal:', minimalist flat illustration, clean lines',
-  cyberpunk:', cyberpunk neon noir, blade runner, rain reflections',
-  fantasy:', epic fantasy art, cinematic, magical atmosphere',
-  portrait:', professional portrait, rim lighting, shallow DOF'
+  oil:', oil painting, textured brushstrokes',photo:', photorealistic, DSLR, 85mm',
+  watercolor:', watercolor, soft edges',digital:', digital concept art, artstation',
+  minimal:', minimalist flat, clean lines',cyberpunk:', cyberpunk neon noir',
+  fantasy:', epic fantasy art, cinematic'
 };
 
-/* ═══════════════════════════════════
-   MINECRAFT WIZARD DATA
-═══════════════════════════════════ */
-const MC_WIZARD_STEPS = [
-  {
-    id:'modtype', title:'Mod Tipi Seç', icon:'⛏️',
-    desc:'Hangi tür bir Minecraft modu oluşturmak istiyorsun?',
-    type:'grid', cols:3,
-    opts:[
-      {ico:'⚔️',name:'Silah / Eşya',desc:'Kılıç, ok, asa, özel eşya',val:'item'},
-      {ico:'🧱',name:'Blok',desc:'Özel bloklar, makineler',val:'block'},
-      {ico:'👾',name:'Yaratık',desc:'Yeni mob ve boss\'lar',val:'mob'},
-      {ico:'🔨',name:'Araç',desc:'Kazma, balta, kürek, çapa',val:'tool'},
-      {ico:'🛡️',name:'Zırh',desc:'Tam zırh seti, özel güçler',val:'armor'},
-      {ico:'🌿',name:'Biyom',desc:'Yeni biome ve yapılar',val:'biome'},
-      {ico:'🪄',name:'Büyü',desc:'Özel enchantment\'lar',val:'enchant'},
-      {ico:'🏭',name:'Makine',desc:'Crafting makineleri, fırınlar',val:'machine'},
-      {ico:'🎯',name:'Mekânik',desc:'Özel oyun mekaniği',val:'mechanic'},
-    ]
-  },
-  {
-    id:'loader', title:'Mod Loader', icon:'🔧',
-    desc:'Hangi mod yükleyicisini kullanmak istiyorsun?',
-    type:'grid', cols:2,
-    opts:[
-      {ico:'🔥',name:'Forge',desc:'En popüler. 1.20.1 destekli. Büyük mod ekosistemi.',val:'forge'},
-      {ico:'🧵',name:'Fabric',desc:'Hafif ve hızlı. Modern API. Güncel sürümler.',val:'fabric'},
-    ]
-  },
-  {
-    id:'mcversion', title:'Minecraft Sürümü', icon:'📦',
-    desc:'Modun hangi Minecraft sürümü için olsun?',
-    type:'grid', cols:3,
-    opts:[
-      {ico:'🌟',name:'1.20.1',desc:'En popüler mod sürümü',val:'1.20.1'},
-      {ico:'🔥',name:'1.19.4',desc:'Geniş mod desteği',val:'1.19.4'},
-      {ico:'💎',name:'1.18.2',desc:'Stabil & güvenilir',val:'1.18.2'},
-      {ico:'⚡',name:'1.21',desc:'En yeni sürüm',val:'1.21'},
-      {ico:'🏛️',name:'1.16.5',desc:'Klasik, çok mod var',val:'1.16.5'},
-      {ico:'🎮',name:'1.12.2',desc:'Eski ama güçlü',val:'1.12.2'},
-    ]
-  },
-  {
-    id:'modname', title:'Mod Adı & Açıklama', icon:'✏️',
-    desc:'Modun adını ve ne yapacağını yaz.',
-    type:'input',
-    fields:[
-      {id:'name', label:'Mod Adı', ph:'örn: UltraKılıç Modu, DragonForge, SkyBiomes...', type:'text'},
-      {id:'modid', label:'Mod ID (küçük harf, boşluksuz)', ph:'örn: ultrasword, dragonforge, skybiomes', type:'text'},
-      {id:'desc', label:'Açıklama (ne yapacağını detaylandır)', ph:'örn: Elmastan güçlü 3 yeni silah ekler. Ateş fırlatır, zehir verir, uçma özelliği olan büyülü kılıç...', type:'textarea'},
-    ]
-  },
-  {
-    id:'features', title:'Özellikler', icon:'✨',
-    desc:'Modun hangi özelliklere sahip olmasını istiyorsun? (Birden fazla seçebilirsin)',
-    type:'multisel',
-    opts:[
-      {ico:'🔥',name:'Ateş Hasarı',val:'fire'},
-      {ico:'☠️',name:'Zehir Etkisi',val:'poison'},
-      {ico:'💨',name:'Hız Artışı',val:'speed'},
-      {ico:'💪',name:'Güç Artışı',val:'strength'},
-      {ico:'🛡️',name:'Hasar Azaltma',val:'protection'},
-      {ico:'✨',name:'Parıltı Efekti',val:'glow'},
-      {ico:'🌊',name:'Su Soluma',val:'waterbreath'},
-      {ico:'🦅',name:'Uçma',val:'fly'},
-      {ico:'❤️‍🩹',name:'Can Yenileme',val:'regen'},
-      {ico:'🌑',name:'Gecede Görme',val:'nightvision'},
-      {ico:'💥',name:'Patlama',val:'explosion'},
-      {ico:'⚡',name:'Şimşek',val:'lightning'},
-      {ico:'🧲',name:'Çekim',val:'attract'},
-      {ico:'🔮',name:'Teleport',val:'teleport'},
-      {ico:'❄️',name:'Dondurma',val:'freeze'},
-      {ico:'🍖',name:'Açlığı Giderir',val:'food'},
-    ]
-  },
-  {
-    id:'stats', title:'İstatistikler', icon:'📊',
-    desc:'Modun güç dengelerini ayarla.',
-    type:'ranges',
-    ranges:[
-      {id:'damage',label:'Hasar Gücü',min:1,max:100,val:15,unit:'❤️'},
-      {id:'durability',label:'Dayanıklılık',min:50,max:5000,val:1000,unit:'🔧'},
-      {id:'speed',label:'Hız Çarpanı',min:1,max:10,val:3,unit:'⚡'},
-      {id:'rarity',label:'Nadirslik (1=Common, 10=Legendary)',min:1,max:10,val:5,unit:'💎'},
-    ]
-  },
-  {
-    id:'extras', title:'Ekstra Seçenekler', icon:'⚙️',
-    desc:'Son dokunuşlar — moduna neler ekleyelim?',
-    type:'multisel',
-    opts:[
-      {ico:'📖',name:'Crafting Tarifi',val:'recipe'},
-      {ico:'🏆',name:'Başarım (Achievement)',val:'achievement'},
-      {ico:'🔊',name:'Özel Ses Efekti',val:'sound'},
-      {ico:'✨',name:'Parçacık Efekti',val:'particle'},
-      {ico:'🌍',name:'Çeviri Desteği (en_us)',val:'lang'},
-      {ico:'📦',name:'Loot Table (Ящик\'dan çıksın)',val:'loot'},
-      {ico:'🗺️',name:'Yaratıcı Mod Sekme',val:'tab'},
-      {ico:'🔖',name:'Detaylı README',val:'readme'},
-    ]
-  }
-];
-
-// MC Wizard state
-let mcWiz = {
-  active: false,
-  step: 0,
-  data: {},
-  quickType: null
-};
-
-/* ═══════════════════════════════════
+/* ══════════════════════
    INIT
-═══════════════════════════════════ */
-window.addEventListener('load',()=>{
-  loadState();initKeys();refreshSessions();addCursorListeners();
-});
+══════════════════════ */
+window.addEventListener('load',()=>{loadState();initKeys();refreshSessions();addHoverListeners();});
+
 function loadState(){
   const p=ld('zb_p')||'gemini',k=ld('zb_k')||'';
   S.prov=p;
@@ -1074,16 +801,10 @@ function loadState(){
 }
 const ld=k=>{try{return localStorage.getItem(k);}catch{return null;}};
 const sv=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
-function addCursorListeners(){
-  document.querySelectorAll('button,a,[onclick],.q-chip,.prov-card,.cmd-item,.sess-item,.mc-opt,.mc-chip,.mc-qbtn').forEach(el=>{
-    el.addEventListener('mouseenter',()=>curR.classList.add('hovered'));
-    el.addEventListener('mouseleave',()=>curR.classList.remove('hovered'));
-  });
-}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    SETUP
-═══════════════════════════════════ */
+══════════════════════ */
 function selProv(p,silent=false){
   S.prov=p;
   document.getElementById('pc-gemini').classList.toggle('sel',p==='gemini');
@@ -1102,8 +823,7 @@ function toggleEye(){
 function showErr(msg){
   const b=document.getElementById('setup-err');
   document.getElementById('setup-err-txt').textContent=msg;
-  b.style.display='flex';
-  setTimeout(()=>b.style.display='none',6000);
+  b.style.display='flex';setTimeout(()=>b.style.display='none',6000);
 }
 async function testConn(){
   const k=document.getElementById('api-inp').value.trim();
@@ -1112,22 +832,19 @@ async function testConn(){
   btn.textContent='⏳ Test ediliyor...';btn.disabled=true;
   try{
     if(S.prov==='gemini'){
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${k}`,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:'Hi, say OK'}]}]})});
-      const d=await r.json();
-      if(!r.ok)throw new Error(d.error?.message||'HTTP '+r.status);
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${k}`,{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:'Hi say OK'}]}]})});
+      const d=await r.json();if(!r.ok)throw new Error(d.error?.message||'HTTP '+r.status);
     }else{
       const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json','Authorization':`Bearer ${k}`},body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:5,messages:[{role:'user',content:'Hi'}]})});
-      const d=await r.json();
-      if(!r.ok)throw new Error(d.error?.message||'HTTP '+r.status);
+      const d=await r.json();if(!r.ok)throw new Error(d.error?.message||'HTTP '+r.status);
     }
     btn.textContent='✅ Bağlantı başarılı!';btn.style.color='var(--ok)';
     setTimeout(()=>{btn.textContent='🔍 Bağlantıyı Test Et';btn.style.color='';btn.disabled=false;},4000);
   }catch(e){
     btn.textContent='🔍 Bağlantıyı Test Et';btn.disabled=false;
     const m=e.message||'';
-    if(m.toLowerCase().includes('failed to fetch'))showErr('🌐 Ağ hatası — API\'ye ulaşılamıyor. ('+m+')');
-    else if(m.includes('401')||m.includes('403'))showErr('🔑 API anahtarı geçersiz! ('+m+')');
-    else if(m.includes('429'))showErr('⏱️ Rate limit! Biraz bekle. ('+m+')');
+    if(m.toLowerCase().includes('failed to fetch'))showErr('🌐 Ağ hatası. Farklı ağ/tarayıcı dene. ('+m+')');
+    else if(m.includes('401')||m.includes('403'))showErr('🔑 Geçersiz API anahtarı. ('+m+')');
     else showErr('Hata: '+m);
   }
 }
@@ -1148,7 +865,7 @@ function openApp(){
     S.model=S.prov==='gemini'?'gemini-1.5-flash-latest':'llama-3.3-70b-versatile';
     mp.value=S.model;
   }
-  refreshSessions();document.getElementById('temp-sl').value=S.temp;chTemp(S.temp,true);addCursorListeners();
+  refreshSessions();document.getElementById('temp-sl').value=S.temp;chTemp(S.temp);addHoverListeners();
 }
 function changeKey(){
   sv('zb_k','');S.key='';S.hist=[];
@@ -1157,9 +874,9 @@ function changeKey(){
   document.getElementById('api-inp').value='';
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    SESSIONS
-═══════════════════════════════════ */
+══════════════════════ */
 function saveSess(){
   if(!S.hist.length)return;
   const first=S.hist[0];
@@ -1191,34 +908,32 @@ function refreshSessions(){
   S.sessions.forEach(s=>{
     const d=document.createElement('div');
     d.className='sess-item'+(s.id===S.sessId?' active':'');
-    d.innerHTML=`<span class="sess-ico">💬</span>${esc(s.title)}`;
+    d.innerHTML=`<span style="font-size:.72rem;opacity:.5">💬</span>${esc(s.title)}`;
     d.onclick=()=>loadSess(s.id);
     el.appendChild(d);
   });
 }
-function newSession(){saveSess();S.hist=[];S.sessId=null;clearChat(false);refreshSessions();}
-
+function newSession(){saveSess();S.hist=[];S.sessId=null;MC.active=false;MC.hist=[];MC.stage='idle';clearChat(false);refreshSessions();}
 let sbOpen=true;
 function toggleSB(){sbOpen=!sbOpen;document.getElementById('sidebar').classList.toggle('closed',!sbOpen);}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    SETTINGS
-═══════════════════════════════════ */
+══════════════════════ */
 function openSettings(){document.getElementById('settings-overlay').classList.add('open');}
 function closeSettings(){document.getElementById('settings-overlay').classList.remove('open');}
 function togSet(k,btn){S.cfg[k]=!S.cfg[k];btn.classList.toggle('on',S.cfg[k]);sv('zb_cfg',JSON.stringify(S.cfg));applyAllSettings();}
 function applyAllSettings(){
   Object.entries(S.cfg).forEach(([k,v])=>{const el=document.getElementById('tog-'+k);if(el)el.classList.toggle('on',v);});
-  document.getElementById('cursor').style.display=S.cfg.cursor?'':'none';
-  document.getElementById('cursor-ring').style.display=S.cfg.cursor?'':'none';
+  cur.style.display=S.cfg.cursor?'':'none';
+  curR.style.display=S.cfg.cursor?'':'none';
 }
 function exportChat(){
   if(!S.hist.length){toast('Dışa aktarılacak sohbet yok.','warn');return;}
   const lines=S.hist.map(m=>{const role=m.role==='user'?'SEN':'ZekaBot';const c=S.prov==='gemini'?m.parts?.[0]?.text:m.content;return`[${role}]\n${c}\n`;});
   const b=new Blob([lines.join('\n---\n')],{type:'text/plain;charset=utf-8'});
   const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download=`zekabot-${Date.now()}.txt`;a.click();URL.revokeObjectURL(u);
-  toast('Sohbet dışa aktarıldı!','ok');
+  a.href=u;a.download=`zekabot-${Date.now()}.txt`;a.click();URL.revokeObjectURL(u);toast('Sohbet dışa aktarıldı!','ok');
 }
 function nuke(){
   if(!confirm('Tüm veriler silinecek. Emin misin?'))return;
@@ -1226,11 +941,11 @@ function nuke(){
   location.reload();
 }
 function switchModel(v){S.model=v;sv('zb_m',v);toast('Model: '+v,'info');}
-function chTemp(v,silent=false){S.temp=parseFloat(v);document.getElementById('temp-num').textContent=parseFloat(v).toFixed(1);}
+function chTemp(v){S.temp=parseFloat(v);document.getElementById('temp-num').textContent=parseFloat(v).toFixed(1);}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    MODES
-═══════════════════════════════════ */
+══════════════════════ */
 const ALL_MODES=['chat','image','code','translate','summarize','analyze','creative','debug','math','seo','mcmod'];
 function setMode(m){
   S.mode=m;
@@ -1241,11 +956,20 @@ function setMode(m){
   const st=document.getElementById('studio-toggle');
   if(st)st.style.display=m==='image'?'flex':'none';
   if(m!=='image'){document.getElementById('img-studio').classList.remove('open');document.getElementById('img-history').style.display='none';}
-  // MC quick bar
-  const qb=document.getElementById('mc-quick-bar');
-  if(qb)qb.classList.toggle('open',m==='mcmod');
   txt.focus();
 }
+
+function startMCMode(){
+  setMode('mcmod');
+  rmWelcome();
+  // Reset MC state
+  MC.active=true;MC.hist=[];MC.stage='asking';
+  // İlk karşılama mesajı — AI'ya bırakmadan direkt göster
+  addMCMsg(`⛏️ **Minecraft Mod Builder'a hoş geldin!**\n\nNe tür bir mod yapmak istediğini anlat — ne kadar detaylı olursa o kadar iyi! Sonra sana birkaç soru soracağım ve sonunda tam çalışan bir **.jar** dosyası oluşturacağım.\n\nÖrneğin: *"ateş fırlatır", "süper güçlü zırh seti", "uçmayı sağlayan bot"* gibi...\n\n💬 Haydi, modunu anlat!`);
+  txt.focus();
+}
+
+function focusInput(){txt.focus();}
 
 function toggleStudio(){document.getElementById('img-studio').classList.toggle('open');}
 let selImgStyle='default';
@@ -1254,11 +978,10 @@ function selStyle(style,el){
   document.querySelectorAll('.sty-chip').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
 }
-function focusInput(){txt.focus();}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    INPUT
-═══════════════════════════════════ */
+══════════════════════ */
 function onType(){
   txt.style.height='auto';txt.style.height=Math.min(txt.scrollHeight,180)+'px';
   const l=txt.value.length;
@@ -1267,1017 +990,380 @@ function onType(){
 txt.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go();}});
 function qSend(t){txt.value=t;onType();go();}
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    MAIN SEND
-═══════════════════════════════════ */
+══════════════════════ */
 async function go(){
   const t=txt.value.trim();if(!t||S.loading)return;
   S.loading=true;sendB.disabled=true;
   txt.value='';txt.style.height='auto';onType();rmWelcome();
-  if(S.mode==='image')await genImg(t);
-  else if(S.mode==='mcmod')await handleMCModText(t);
+
+  if(S.mode==='image') await genImg(t);
+  else if(S.mode==='mcmod'&&MC.active) await handleMCConversation(t);
   else await doChat(t);
+
   S.loading=false;sendB.disabled=false;txt.focus();
   saveSess();refreshSessions();
 }
 
-/* ═══════════════════════════════════════════════════════
-   MINECRAFT MOD SYSTEM
-═══════════════════════════════════════════════════════ */
-function startMCWizard(){
-  rmWelcome();
-  setMode('mcmod');
-  mcWiz={active:true,step:0,data:{},quickType:null};
-  renderMCStep(0);
-}
+/* ══════════════════════════════════════════
+   MC MOD — SAF SOHBET SİSTEMİ
+══════════════════════════════════════════ */
+async function handleMCConversation(userText){
+  addMsg('user',userText,true);
+  if(MC.stage==='building') return;
 
-function mcQuick(type){
-  mcWiz={active:true,step:0,data:{modtype:type},quickType:type};
-  // Skip step 0, go to step 1
-  mcWiz.step=1;
-  rmWelcome();
-  setMode('mcmod');
-  renderMCStep(1);
-}
+  MC.hist=MC.hist||[];
+  MC.hist.push({role:'user',content:userText});
 
-async function handleMCModText(text){
-  // User typed a description — ask AI to extract parameters and then build
-  addMsg('user',text,false);
   showTyping();
-  
-  // Build mod based on text description
-  const prompt=`Kullanıcı şu Minecraft modunu istiyor: "${text}"
-
-Bu mod için aşağıdaki parametreleri belirle ve JSON formatında döndür:
-{
-  "modname": "mod adı",
-  "modid": "modid_snake_case",
-  "description": "kısa açıklama",
-  "modtype": "item/block/mob/tool/armor",
-  "loader": "forge",
-  "mcversion": "1.20.1",
-  "features": ["fire","poison"],
-  "damage": 15,
-  "durability": 1000
-}
-
-SADECE JSON döndür, başka bir şey yazma.`;
-
-  let params;
+  let reply='';
   try{
-    const raw=S.prov==='gemini'?
-      await callGemini([{role:'user',parts:[{text:prompt}]}],SYS.mcmod):
-      await callGroq([{role:'user',content:prompt}],SYS.mcmod);
-    
-    const cleaned=raw.replace(/```json|```/g,'').trim();
-    params=JSON.parse(cleaned);
-  }catch{
-    params={
-      modname:text.slice(0,30)||'CustomMod',modid:'custommod',
-      description:text,modtype:'item',loader:'forge',mcversion:'1.20.1',
-      features:['fire'],damage:15,durability:1000
-    };
-  }
-  
-  removeTyping();
-  await buildMCMod(params);
-}
-
-function renderMCStep(stepIdx){
-  const step=MC_WIZARD_STEPS[stepIdx];
-  if(!step)return;
-  
-  const totalSteps=MC_WIZARD_STEPS.length;
-  const dots=MC_WIZARD_STEPS.map((_,i)=>`<div class="wiz-step-dot ${i<stepIdx?'done':i===stepIdx?'active':''}"></div>`).join('');
-
-  let bodyHtml='';
-
-  if(step.type==='grid'){
-    const colsClass=`cols${step.cols||2}`;
-    bodyHtml=`<div class="mc-opts ${colsClass}" id="mc-opts-${step.id}">
-      ${step.opts.map(o=>`
-        <div class="mc-opt ${mcWiz.data[step.id]===o.val?'sel':''}" 
-          onclick="mcSelectOpt('${step.id}','${o.val}',this)"
-          data-val="${o.val}">
-          <div class="mc-opt-ico">${o.ico}</div>
-          <div class="mc-opt-info">
-            <div class="mc-opt-name">${o.name}</div>
-            ${o.desc?`<div class="mc-opt-desc">${o.desc}</div>`:''}
-          </div>
-        </div>`).join('')}
-    </div>`;
-  }
-  else if(step.type==='input'){
-    bodyHtml=step.fields.map(f=>`
-      <label style="display:block;font-size:.76rem;color:var(--t3);font-family:var(--f-head);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px">${f.label}</label>
-      ${f.type==='textarea'?
-        `<textarea class="mc-field" id="mc-field-${f.id}" placeholder="${f.ph}" rows="3">${mcWiz.data[f.id]||''}</textarea>`:
-        `<input class="mc-field" id="mc-field-${f.id}" type="text" placeholder="${f.ph}" value="${mcWiz.data[f.id]||''}"/>`}
-    `).join('');
-  }
-  else if(step.type==='multisel'){
-    bodyHtml=`<div class="mc-chips" id="mc-chips-${step.id}">
-      ${step.opts.map(o=>`
-        <span class="mc-chip ${(mcWiz.data[step.id]||[]).includes(o.val)?'sel':''}" 
-          onclick="mcToggleChip('${step.id}','${o.val}',this)">${o.ico} ${o.name}</span>
-      `).join('')}
-    </div>`;
-  }
-  else if(step.type==='ranges'){
-    bodyHtml=step.ranges.map(r=>`
-      <div class="mc-range-wrap">
-        <div class="mc-range-row">
-          <span class="mc-range-lbl">${r.label}</span>
-          <span class="mc-range-val" id="mc-rv-${r.id}">${mcWiz.data[r.id]||r.val} ${r.unit}</span>
-        </div>
-        <input type="range" class="mc-range" min="${r.min}" max="${r.max}" 
-          value="${mcWiz.data[r.id]||r.val}"
-          oninput="mcUpdateRange('${r.id}','${r.unit}',this.value)"/>
-      </div>
-    `).join('');
-  }
-
-  const isLast=stepIdx===totalSteps-1;
-  
-  const wizHtml=`
-  <div class="mc-wizard" id="mc-wizard-wrap">
-    <div class="mc-wizard-card">
-      <div class="mc-wizard-head">
-        <div class="mc-wiz-icon">${step.icon}</div>
-        <div>
-          <div class="mc-wiz-title">${step.title}</div>
-          <div class="mc-wiz-sub">Adım ${stepIdx+1} / ${totalSteps}</div>
-        </div>
-        <div class="mc-wiz-step-bar">${dots}</div>
-      </div>
-      <div class="mc-wizard-body">
-        <div class="mc-question">${step.icon} ${step.title}</div>
-        <div class="mc-qdesc">${step.desc}</div>
-        ${bodyHtml}
-        <div class="mc-wiz-nav">
-          ${stepIdx>0?`<button class="mc-btn-back" onclick="mcGoBack()">← Geri</button>`:''}
-          <button class="mc-btn-next" onclick="mcGoNext(${stepIdx})">
-            ${isLast?'🚀 Mod Oluştur!':'Devam Et →'}
-          </button>
-          <span class="mc-step-info">${stepIdx+1}/${totalSteps}</span>
-        </div>
-      </div>
-    </div>
-  </div>`;
-
-  // Remove existing wizard
-  document.getElementById('mc-wizard-wrap')?.remove();
-  
-  chat.insertAdjacentHTML('beforeend',wizHtml);
-  scrollBot();
-  addCursorListeners();
-}
-
-function mcSelectOpt(stepId,val,el){
-  mcWiz.data[stepId]=val;
-  el.closest('.mc-opts').querySelectorAll('.mc-opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');
-}
-
-function mcToggleChip(stepId,val,el){
-  if(!mcWiz.data[stepId])mcWiz.data[stepId]=[];
-  const arr=mcWiz.data[stepId];
-  const idx=arr.indexOf(val);
-  if(idx>-1)arr.splice(idx,1);
-  else arr.push(val);
-  el.classList.toggle('sel',arr.includes(val));
-}
-
-function mcUpdateRange(id,unit,val){
-  mcWiz.data[id]=parseInt(val);
-  const el=document.getElementById('mc-rv-'+id);
-  if(el)el.textContent=val+' '+unit;
-}
-
-function mcGoBack(){
-  if(mcWiz.step>0){mcWiz.step--;renderMCStep(mcWiz.step);}
-}
-
-function mcGoNext(stepIdx){
-  const step=MC_WIZARD_STEPS[stepIdx];
-  
-  // Validate
-  if(step.type==='grid'&&!mcWiz.data[step.id]){
-    toast('Lütfen bir seçenek seç!','warn');return;
-  }
-  if(step.type==='input'){
-    for(const f of step.fields){
-      const el=document.getElementById('mc-field-'+f.id);
-      if(el)mcWiz.data[f.id]=el.value.trim();
-    }
-    if(!mcWiz.data.name){toast('Mod adı zorunlu!','warn');return;}
-    if(!mcWiz.data.modid){
-      // Auto-generate modid from name
-      mcWiz.data.modid=mcWiz.data.name.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'mymod';
-    }
-  }
-  if(step.type==='ranges'){
-    step.ranges.forEach(r=>{
-      if(mcWiz.data[r.id]===undefined)mcWiz.data[r.id]=r.val;
-    });
-  }
-  
-  const isLast=stepIdx===MC_WIZARD_STEPS.length-1;
-  if(isLast){
-    // Build the mod!
-    document.getElementById('mc-wizard-wrap')?.remove();
-    buildMCMod(mcWiz.data);
-  }else{
-    mcWiz.step=stepIdx+1;
-    renderMCStep(mcWiz.step);
-  }
-}
-
-/* ═══════════════════════════
-   MOD BUILDER ENGINE
-═══════════════════════════ */
-async function buildMCMod(params){
-  const modName=params.name||params.modname||'CustomMod';
-  const modId=(params.modid||modName.toLowerCase().replace(/[^a-z0-9]/g,'')).slice(0,20)||'custommod';
-  const loader=params.loader||'forge';
-  const mcVer=params.mcversion||'1.20.1';
-  const modType=params.modtype||'item';
-  const features=params.features||[];
-  const damage=params.damage||15;
-  const durability=params.durability||1000;
-  const extras=params.extras||[];
-  const desc=params.desc||params.description||'ZekaBot Pro tarafından oluşturuldu';
-
-  // Show build progress card
-  const buildId='mcbuild'+Date.now();
-  const buildHtml=`
-  <div class="mc-wizard" id="${buildId}">
-    <div class="mc-wizard-card">
-      <div class="mc-wizard-head">
-        <div class="mc-wiz-icon">⚙️</div>
-        <div><div class="mc-wiz-title">${esc(modName)} Oluşturuluyor...</div>
-        <div class="mc-wiz-sub">${loader.toUpperCase()} · MC ${mcVer}</div></div>
-      </div>
-      <div class="mc-wizard-body">
-        <div class="mc-build-card">
-          <div class="mc-build-spinner"></div>
-          <div class="mc-build-title">AI Kod Üretiyor...</div>
-          <div class="mc-build-sub">Modun Java kodları hazırlanıyor. Bu 15-30 saniye sürebilir.</div>
-          <div class="mc-prog-wrap"><div class="mc-prog-bar" id="${buildId}pb"></div></div>
-          <div class="mc-log" id="${buildId}log">
-            <div class="mc-log-line info">⟳ Başlatılıyor...</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>`;
-  
-  chat.insertAdjacentHTML('beforeend',buildHtml);
-  scrollBot();
-
-  const pb=document.getElementById(buildId+'pb');
-  const log=document.getElementById(buildId+'log');
-  
-  const addLog=(msg,type='')=>{
-    if(!log)return;
-    log.insertAdjacentHTML('beforeend',`<div class="mc-log-line ${type}">${msg}</div>`);
-    log.scrollTop=log.scrollHeight;
-  };
-
-  let prog=0;
-  const pi=setInterval(()=>{prog=Math.min(prog+2,75);if(pb)pb.style.width=prog+'%';},400);
-  
-  await sleep(500);
-  addLog('✓ Proje yapısı hazırlanıyor...','ok');
-  await sleep(600);
-  addLog('⟳ AI ile Java kodu üretiliyor...','info');
-
-  // Generate Java code via AI
-  const prompt=buildMCPrompt({modName,modId,loader,mcVer,modType,features,damage,durability,extras,desc});
-  
-  let generatedCode='';
-  try{
-    const msgs=S.prov==='gemini'?[{role:'user',parts:[{text:prompt}]}]:[{role:'user',content:prompt}];
-    generatedCode=S.prov==='gemini'?await callGemini(msgs,SYS.mcmod):await callGroq(msgs,SYS.mcmod);
+    const msgs=S.prov==='gemini'
+      ?MC.hist.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}))
+      :MC.hist.map(m=>({role:m.role,content:m.content}));
+    reply=S.prov==='gemini'
+      ?await callGemini(msgs,SYS.mcAsk)
+      :await callGroq(msgs,SYS.mcAsk);
   }catch(e){
-    clearInterval(pi);
-    document.getElementById(buildId)?.remove();
-    addMsg('error','Kod üretilemedi: '+e.message,false);
+    removeTyping();
+    addMCMsg('Bir sorun oldu, tekrar dener misin? 😅');
     return;
   }
 
-  clearInterval(pi);
-  if(pb)pb.style.width='85%';
-  addLog('✓ Java kodu üretildi!','ok');
-  await sleep(300);
-  addLog('⟳ .jar dosyası oluşturuluyor...','info');
-  await sleep(400);
+  removeTyping();
+  MC.hist.push({role:'assistant',content:reply});
 
-  // Create the JAR
-  let jarBlob;
+  if(reply.includes('##HAZIR##')){
+    MC.stage='building';
+    const clean=reply.replace('##HAZIR##','').trim();
+    if(clean) addMCMsg(clean);
+    await sleep(400);
+    addMCMsg('✅ Süper! Her şeyi anladım, şimdi modunu oluşturuyorum...');
+    await sleep(600);
+    await buildMCMod(MC.hist);
+  }else{
+    addMCMsg(reply);
+  }
+}
+
+// MC mesaj baloncuğu (yeşil tema)
+function addMCMsg(text){
+  const wrap=document.createElement('div');wrap.className='msg-wrap';
+  if(S.cfg.anim)wrap.style.animation='msgIn .32s ease forwards';else wrap.style.opacity='1';
+  wrap.innerHTML=`<div class="msg-row">
+    <div class="av mc">⛏</div>
+    <div class="msg-body">
+      <div class="bbl mc-bbl">${renderMD(text)}</div>
+      <div class="msg-meta"><span class="msg-t">${now()}</span></div>
+    </div>
+  </div>`;
+  chat.appendChild(wrap);scrollBot();addHoverListeners();
+}
+
+/* ══════════════════════════════════════
+   MC MOD BUILDER (KOD + JAR ÜRETME)
+══════════════════════════════════════ */
+async function buildMCMod(hist){
+  // Konuşma geçmişinden özet çıkar
+  const summary=hist.map(m=>(m.role==='user'?'Kullanıcı: ':'Asistan: ')+m.content).join('\n');
+
+  // Build progress göster
+  const bId='mcb'+Date.now();
+  const bWrap=document.createElement('div');bWrap.className='mc-build-wrap';bWrap.id=bId;
+  if(S.cfg.anim)bWrap.style.animation='msgIn .3s ease forwards';else bWrap.style.opacity='1';
+  bWrap.innerHTML=`
+  <div class="mc-build-card">
+    <div class="mc-build-header">
+      <div class="mc-build-spinner"></div>
+      <div class="mc-build-info">
+        <div class="mc-build-title">Mod Oluşturuluyor...</div>
+        <div class="mc-build-sub" id="${bId}sub">AI Java kodu üretiyor</div>
+      </div>
+    </div>
+    <div class="mc-prog-wrap"><div class="mc-prog-bar" id="${bId}pb"></div></div>
+    <div class="mc-log" id="${bId}log">
+      <div class="mc-log-line info">⟳ Başlatılıyor...</div>
+    </div>
+  </div>`;
+  chat.appendChild(bWrap);scrollBot();
+
+  const pb=document.getElementById(bId+'pb');
+  const log=document.getElementById(bId+'log');
+  const sub=document.getElementById(bId+'sub');
+  const addLog=(m,t='')=>{if(!log)return;log.insertAdjacentHTML('beforeend',`<div class="mc-log-line ${t}">${m}</div>`);log.scrollTop=log.scrollHeight;};
+
+  let prog=0;
+  const pi=setInterval(()=>{prog=Math.min(prog+1.5,82);if(pb)pb.style.width=prog+'%';},400);
+
+  await sleep(400);addLog('✓ Proje yapısı hazırlanıyor...','ok');
+  await sleep(500);addLog('⟳ AI ile Java kodu üretiliyor...','info');
+  if(sub)sub.textContent='AI Java kodu yazıyor...';
+
+  // Kod üret
+  const codePrompt=`Aşağıdaki sohbet geçmişine göre tam çalışan Minecraft modu yaz:\n\n${summary}\n\nEğer loader/sürüm belirtilmediyse Forge 1.20.1 kullan. Tüm dosyaları eksiksiz yaz.`;
+
+  let generatedCode='';
   try{
-    jarBlob=await createMinecraftJar({modName,modId,loader,mcVer,modType,generatedCode,desc,damage,durability,features});
-    if(pb)pb.style.width='100%';
-    addLog('✓ .jar dosyası hazır!','ok');
-    await sleep(300);
+    generatedCode=S.prov==='gemini'
+      ?await callGemini([{role:'user',parts:[{text:codePrompt}]}],SYS.mcBuild)
+      :await callGroq([{role:'user',content:codePrompt}],SYS.mcBuild);
   }catch(e){
-    addLog('⚠️ .jar oluşturma hatası: '+e.message,'warn');
-    jarBlob=null;
+    clearInterval(pi);
+    document.getElementById(bId)?.remove();
+    addMCMsg('❌ Kod üretilemedi: '+e.message+'\n\nLütfen tekrar dene.');
+    return;
   }
 
-  await sleep(200);
-  document.getElementById(buildId)?.remove();
+  clearInterval(pi);if(pb)pb.style.width='88%';
+  addLog('✓ Java kodu üretildi!','ok');
+  if(sub)sub.textContent='.jar dosyası oluşturuluyor...';
+  await sleep(300);addLog('⟳ .jar dosyası oluşturuluyor...','info');
 
-  // Show result
-  showMCResult({modName,modId,loader,mcVer,modType,features,damage,durability,extras,desc,generatedCode,jarBlob});
-}
+  // JAR oluştur
+  let jarBlob=null;
+  // Konuşma geçmişinden mod bilgilerini çıkar
+  const fullConv=hist.map(m=>m.content).join(' ').toLowerCase();
+  const modName=(()=>{const m=fullConv.match(/(?:adı|ismi|name)[:\s]+([\w\s]{2,24})/i);return m?m[1].trim().split(' ').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(''):'CustomMod';})();
+  const modId=modName.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'custommod';
+  const loader=fullConv.includes('fabric')?'fabric':'forge';
+  const mcVerM=fullConv.match(/1\.(20\.1|19\.4|18\.2|21|16\.5|12\.2)/);
+  const mcVer=mcVerM?'1.'+mcVerM[1]:'1.20.1';
 
-function buildMCPrompt({modName,modId,loader,mcVer,modType,features,damage,durability,extras,desc}){
-  const featureStr=features.length?features.join(', '):'yok';
-  const extrasStr=extras.length?extras.join(', '):'yok';
-  
-  return `Minecraft ${loader.toUpperCase()} modu için TAM ÇALIŞAN Java kodu yaz.
-
-MOD BİLGİLERİ:
-- Adı: ${modName}
-- ID: ${modId}
-- Açıklama: ${desc}
-- MC Sürümü: ${mcVer}
-- Mod Loader: ${loader}
-- Mod Tipi: ${modType}
-- Özellikler: ${featureStr}
-- Hasar: ${damage}
-- Dayanıklılık: ${durability}
-- Ekstralar: ${extrasStr}
-
-ZORUNLU KURALLAR:
-1. TAM çalışan, EKSİKSİZ Java kodu yaz — her satırı dahil et
-2. Minimum 3 Java dosyası oluştur (main class + item/block/mob class + registration class)
-3. build.gradle veya fabric.mod.json da dahil et
-4. Türkçe yorum satırları ekle
-5. ${loader==='forge'?'Forge EventBus, @Mod, @EventBusSubscriber kullan':'Fabric API, ModInitializer kullan'}
-6. Crafting tarifi için Datagen veya JSON tarif dosyası ekle
-7. Her dosyayı \`\`\`java [dosya adı]\`\`\` formatında yaz
-
-Tüm dosyaları eksiksiz yaz:`;
-}
-
-async function createMinecraftJar({modName,modId,loader,mcVer,modType,generatedCode,desc,damage,durability,features}){
-  // Check if JSZip is available
-  if(typeof JSZip==='undefined'){
-    throw new Error('JSZip yüklenmedi');
+  try{
+    jarBlob=await createJar({modName,modId,loader,mcVer,generatedCode});
+    if(pb)pb.style.width='100%';addLog('✓ .jar dosyası hazır!','ok');
+  }catch(e){
+    addLog('⚠️ .jar oluşturma sorunu: '+e.message,'warn');
   }
-  
+
+  await sleep(300);
+  document.getElementById(bId)?.remove();
+
+  // Sonuç göster
+  showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,answers});
+
+  // Reset MC state
+  MC.stage='idle';
+}
+
+async function createJar({modName,modId,loader,mcVer,generatedCode}){
+  if(typeof JSZip==='undefined') throw new Error('JSZip yüklenmedi');
   const zip=new JSZip();
-  const javaVersion=mcVer>='1.17'?'17':'8';
-  const forgeVersion=getForgeVersion(mcVer);
-  
-  // Extract code blocks from AI response
-  const codeBlocks=parseCodeBlocks(generatedCode);
-  
-  // Main class
-  const mainClass=codeBlocks.find(b=>b.name&&(b.name.includes('Mod')||b.name.includes('Main')))||codeBlocks[0];
-  const mainClassName=toClassName(modName)+'Mod';
-  
-  // Build gradle
-  if(loader==='forge'){
-    zip.file('build.gradle',buildGradle_Forge(modId,mcVer,forgeVersion));
-    zip.file('settings.gradle',`rootProject.name = '${modId}'`);
-    zip.file('gradle.properties',buildGradleProps(modId,modName,mcVer));
-    zip.file('src/main/resources/META-INF/mods.toml',buildModsToml(modId,modName,desc,mcVer));
-    zip.file('src/main/resources/pack.mcmeta',JSON.stringify({pack:{pack_format:15,description:desc}},null,2));
-    
-    // Add all Java files from AI
-    codeBlocks.forEach((block,i)=>{
-      if(block.lang==='java'||block.lang===''){
-        const fname=block.name||`${mainClassName}${i===0?'':i}.java`;
-        const cleanName=fname.replace(/[^\w.]/g,'')||`Class${i}.java`;
-        zip.file(`src/main/java/com/${modId}/${cleanName}`,block.code);
-      }else if(block.lang==='json'&&block.name){
-        zip.file(`src/main/resources/${block.name}`,block.code);
-      }
-    });
-    
-    // Fallback: if no Java files extracted, use a template
-    if(codeBlocks.filter(b=>b.lang==='java'||b.lang==='').length===0){
-      zip.file(`src/main/java/com/${modId}/${mainClassName}.java`,
-        buildJavaTemplate_Forge(modId,modName,mainClassName,modType,damage,durability,features));
-    }
-    
-    // Loot table
-    zip.file(`src/main/resources/data/${modId}/loot_tables/items/${modId}_item.json`,
-      JSON.stringify({type:"minecraft:block",pools:[{rolls:1,entries:[{type:"minecraft:item",name:`${modId}:${modId}_item`}]}]},null,2));
-    
-    // Lang file
-    const langData={};
-    langData[`item.${modId}.${modId}_item`]=modName;
-    langData[`block.${modId}.${modId}_block`]=modName+' Bloğu';
-    zip.file(`src/main/resources/assets/${modId}/lang/en_us.json`,JSON.stringify(langData,null,2));
-    zip.file(`src/main/resources/assets/${modId}/lang/tr_tr.json`,JSON.stringify(langData,null,2));
-    
-    // Readme
-    zip.file('README.md',buildReadme(modName,modId,desc,loader,mcVer,features,damage,durability));
-  }
-  else if(loader==='fabric'){
-    zip.file('build.gradle',buildGradle_Fabric(modId,mcVer));
-    zip.file('settings.gradle',`rootProject.name = '${modId}'`);
-    zip.file('gradle.properties',buildGradleProps_Fabric(modId,mcVer));
-    zip.file('src/main/resources/fabric.mod.json',buildFabricModJson(modId,modName,desc,mcVer,mainClassName));
-    
-    codeBlocks.forEach((block,i)=>{
-      if(block.lang==='java'||block.lang===''){
-        const fname=block.name||`${mainClassName}${i===0?'':i}.java`;
-        const cleanName=fname.replace(/[^\w.]/g,'')||`Class${i}.java`;
-        zip.file(`src/main/java/com/${modId}/${cleanName}`,block.code);
-      }
-    });
-    
-    if(codeBlocks.filter(b=>b.lang==='java'||b.lang==='').length===0){
-      zip.file(`src/main/java/com/${modId}/${mainClassName}.java`,
-        buildJavaTemplate_Fabric(modId,modName,mainClassName,modType,damage,durability,features));
-    }
-    zip.file('README.md',buildReadme(modName,modId,desc,loader,mcVer,features,damage,durability));
-  }
+  const fv=({'1.20.1':'47.2.0','1.19.4':'45.2.0','1.18.2':'40.2.0','1.21':'51.0.0','1.16.5':'36.2.39','1.12.2':'14.23.5.2860'})[mcVer]||'47.2.0';
+  const cn=modName.replace(/[^a-zA-Z0-9 ]/g,' ').split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1).toLowerCase():'').join('')||'CustomMod';
 
-  // Generate zip/jar (JAR is just a ZIP with specific structure)
-  const blob=await zip.generateAsync({
-    type:'blob',
-    compression:'DEFLATE',
-    compressionOptions:{level:6}
-  });
-  return blob;
-}
-
-function parseCodeBlocks(text){
+  // Kod bloklarını ayıkla
   const blocks=[];
-  // Match ```java filename or ```java or ``` etc.
-  const regex=/```(\w*)?(?:\s+([^\n]+))?\n([\s\S]*?)```/g;
+  const re=/```(\w+)?(?:\s+([^\n]+))?\n([\s\S]*?)```/g;
   let m;
-  while((m=regex.exec(text))!==null){
-    blocks.push({
-      lang:(m[1]||'').toLowerCase(),
-      name:m[2]||'',
-      code:m[3]||''
-    });
+  while((m=re.exec(generatedCode))!==null){
+    blocks.push({lang:(m[1]||'').toLowerCase(),name:(m[2]||'').trim(),code:m[3]||''});
   }
-  return blocks;
-}
 
-function toClassName(name){
-  return name.replace(/[^a-zA-Z0-9]/g,' ')
-    .split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join('');
-}
+  if(loader==='fabric'){
+    zip.file('build.gradle',`plugins{id 'fabric-loom' version '1.5-SNAPSHOT';id 'maven-publish'}\nversion='1.0.0'\ngroup='com.${modId}'\nrepositories{mavenCentral();maven{url 'https://maven.fabricmc.net/'}}\ndependencies{minecraft "com.mojang:minecraft:${mcVer}";mappings "net.fabricmc:yarn:${mcVer}+build.1:v2";modImplementation "net.fabricmc:fabric-loader:0.15.11";modImplementation "net.fabricmc.fabric-api:fabric-api:0.91.0+${mcVer}"}\njava{toolchain{languageVersion=JavaLanguageVersion.of(17)}}`);
+    zip.file('src/main/resources/fabric.mod.json',JSON.stringify({schemaVersion:1,id:modId,version:'1.0.0',name:modName,description:'ZekaBot Pro tarafından oluşturuldu',authors:['Lordyağız'],license:'MIT',environment:'*',entrypoints:{main:[`com.${modId}.${cn}Mod`]},depends:{fabricloader:'>=0.14.21','fabric-api':'*',minecraft:`~${mcVer}`}},null,2));
+  }else{
+    zip.file('build.gradle',`buildscript{repositories{maven{url='https://maven.minecraftforge.net'};mavenCentral()};dependencies{classpath group:'net.minecraftforge.gradle',name:'ForgeGradle',version:'6.+',changing:true}}\napply plugin:'net.minecraftforge.gradle'\nversion='1.0.0'\ngroup='com.${modId}'\njava{toolchain.languageVersion=JavaLanguageVersion.of(17)}\nminecraft{mappings channel:'official',version:'${mcVer}'}\ndependencies{minecraft 'net.minecraftforge:forge:${mcVer}-${fv}'}`);
+    zip.file('settings.gradle',`rootProject.name='${modId}'`);
+    zip.file('gradle.properties',`minecraft_version=${mcVer}\nmod_version=1.0.0\nmod_id=${modId}\nmod_name=${modName}`);
+    zip.file('src/main/resources/META-INF/mods.toml',`modLoader="javafml"\nloaderVersion="[47,)"\nlicense="MIT"\n[[mods]]\n    modId="${modId}"\n    version="1.0.0"\n    displayName="${modName}"\n    description="ZekaBot Pro tarafından oluşturuldu — Lordyağız"\n[[dependencies.${modId}]]\n    modId="forge"\n    mandatory=true\n    versionRange="[47,)"\n    ordering="NONE"\n    side="BOTH"\n[[dependencies.${modId}]]\n    modId="minecraft"\n    mandatory=true\n    versionRange="[${mcVer},)"\n    ordering="NONE"\n    side="BOTH"`);
+    zip.file('src/main/resources/pack.mcmeta',JSON.stringify({pack:{pack_format:15,description:modName}},null,2));
+  }
 
-function getForgeVersion(mcVer){
-  const map={'1.20.1':'47.2.0','1.19.4':'45.2.0','1.18.2':'40.2.0','1.21':'51.0.0','1.16.5':'36.2.39','1.12.2':'14.23.5.2860'};
-  return map[mcVer]||'47.2.0';
-}
-
-function buildGradle_Forge(modId,mcVer,forgeVer){
-return `buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
+  // Java dosyalarını ekle
+  let javaAdded=0;
+  blocks.forEach((b,i)=>{
+    if(b.lang==='java'||(!b.lang&&b.code.includes('public class'))){
+      const fname=b.name||(i===0?`${cn}Mod.java`:`${cn}${i}.java`);
+      const clean=fname.replace(/[^\w.]/g,'')||`Class${i}.java`;
+      zip.file(`src/main/java/com/${modId}/${clean}`,b.code);
+      javaAdded++;
+    }else if(b.lang==='json'&&b.name){
+      zip.file(`src/main/resources/${b.name}`,b.code);
+    }else if(b.lang==='groovy'||b.name?.endsWith('.gradle')){
+      // skip, already added
     }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
-    }
-}
+  });
 
-plugins {
-    id 'eclipse'
-    id 'maven-publish'
-}
-
-apply plugin: 'net.minecraftforge.gradle'
-
-version = '1.0.0'
-group = 'com.${modId}'
-
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(17)
-}
-
-minecraft {
-    mappings channel: 'official', version: '${mcVer}'
-    reobf = true
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-        }
-        server {
-            workingDirectory project.file('run')
-        }
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    minecraft 'net.minecraftforge:forge:${mcVer}-${forgeVer}'
-}
-
-jar {
-    manifest {
-        attributes([
-            'Specification-Title': '${modId}',
-            'Specification-Version': '1.0.0',
-            'Implementation-Title': project.name,
-            'Implementation-Version': project.jar.archiveVersion
-        ])
-    }
-}`;
-}
-
-function buildGradle_Fabric(modId,mcVer){
-const fabricVer=mcVer>='1.20'?'0.91.0+'+mcVer:'0.83.0+1.19.4';
-return `plugins {
-    id 'fabric-loom' version '1.5-SNAPSHOT'
-    id 'maven-publish'
-}
-
-version = '1.0.0'
-group = 'com.${modId}'
-
-repositories {
-    mavenCentral()
-    maven { url 'https://maven.fabricmc.net/' }
-}
-
-dependencies {
-    minecraft "com.mojang:minecraft:${mcVer}"
-    mappings "net.fabricmc:yarn:${mcVer}+build.1:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.15.11"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricVer}"
-}
-
-java {
-    toolchain { languageVersion = JavaLanguageVersion.of(17) }
-}`;
-}
-
-function buildGradleProps(modId,modName,mcVer){
-return `# ZekaBot Pro tarafından oluşturuldu — Lordyağız
-org.gradle.jvmargs=-Xmx3G
-org.gradle.daemon=false
-
-minecraft_version=${mcVer}
-mod_version=1.0.0
-mod_group_id=com.${modId}
-mod_id=${modId}
-mod_name=${modName}
-mod_license=MIT`;
-}
-
-function buildGradleProps_Fabric(modId,mcVer){
-return `org.gradle.jvmargs=-Xmx3G
-minecraft_version=${mcVer}
-loader_version=0.15.11
-mod_version=1.0.0`;
-}
-
-function buildModsToml(modId,modName,desc,mcVer){
-return `modLoader="javafml"
-loaderVersion="[47,)"
-license="MIT"
-
-[[mods]]
-    modId="${modId}"
-    version="1.0.0"
-    displayName="${modName}"
-    description='''${desc}
-    
-ZekaBot Pro tarafından oluşturuldu — Lordyağız'''
-
-[[dependencies.${modId}]]
-    modId="forge"
-    mandatory=true
-    versionRange="[47,)"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.${modId}]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="[${mcVer},)"
-    ordering="NONE"
-    side="BOTH"`;
-}
-
-function buildFabricModJson(modId,modName,desc,mcVer,mainClass){
-return JSON.stringify({
-  schemaVersion:1,id:modId,version:'1.0.0',
-  name:modName,description:desc,
-  authors:['Lordyağız / ZekaBot Pro'],
-  license:'MIT',
-  environment:'*',
-  entrypoints:{main:[`com.${modId}.${mainClass}`]},
-  depends:{fabricloader:'>=0.14.21','fabric-api':'*',minecraft:`~${mcVer}`}
-},null,2);
-}
-
-function buildJavaTemplate_Forge(modId,modName,mainClassName,modType,damage,durability,features){
-const hasFireDmg=features.includes('fire');
-const hasPoison=features.includes('poison');
-const hasGlow=features.includes('glow');
-
-return `package com.${modId};
-
+  // Fallback Java
+  if(javaAdded===0){
+    zip.file(`src/main/java/com/${modId}/${cn}Mod.java`,
+`package com.${modId};
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraft.world.item.*;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.network.chat.Component;
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-/**
- * ${modName} - ZekaBot Pro tarafından oluşturuldu
- * Geliştirici: Lordyağız
- * MC Sürümü: 1.20.1 (Forge)
- * 
- * Özellikler: Hasar=${damage}, Dayanıklılık=${durability}
- ${features.length?'* Efektler: '+features.join(', '):''}
- */
+/** ${modName} — ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız */
 @Mod("${modId}")
-public class ${mainClassName} {
-    
-    // Logger — hata ayıklama için
+public class ${cn}Mod {
     public static final Logger LOGGER = LogManager.getLogger("${modId}");
-    public static final String MOD_ID = "${modId}";
-    
-    // ────────────────────────────────────────
-    // Eşya Kaydedicisi (Deferred Register)
-    // ────────────────────────────────────────
-    public static final DeferredRegister<Item> ITEMS =
-        DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
-    
-    // ────────────────────────────────────────
-    // Özel Eşya Tanımı
-    // ────────────────────────────────────────
-    public static final RegistryObject<Item> ${modId.toUpperCase()}_ITEM =
-        ITEMS.register("${modId}_item", () -> new CustomItem(
-            new Item.Properties()
-                .durability(${durability})${hasGlow?'\n                .rarity(Rarity.RARE)':''}
-        ));
-    
-    // ────────────────────────────────────────
-    // Mod Başlatıcı
-    // ────────────────────────────────────────
-    public ${mainClassName}() {
-        LOGGER.info("${modName} yükleniyor — ZekaBot Pro v3.1");
-        
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ITEMS.register(modEventBus);
-        
+    public ${cn}Mod() {
+        LOGGER.info("${modName} yükleniyor...");
+        // Mod initialization
         LOGGER.info("${modName} başarıyla yüklendi!");
     }
-    
-    // ────────────────────────────────────────
-    // Özel Eşya Sınıfı — İç Sınıf
-    // ────────────────────────────────────────
-    public static class CustomItem extends SwordItem {
-        
-        // Eşya istatistikleri
-        private static final Tier CUSTOM_TIER = new Tier() {
-            @Override public int getUses() { return ${durability}; }         // Kullanım sayısı
-            @Override public float getSpeed() { return ${Math.min(damage/3,8)}.0f; }        // Kazma hızı
-            @Override public float getAttackDamageBonus() { return ${damage}.0f; }   // Hasar bonusu
-            @Override public int getLevel() { return 4; }                     // Maden seviyesi (4 = elmas+)
-            @Override public int getEnchantmentValue() { return 20; }        // Büyü şansı
-            @Override public net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> getTag() {
-                return net.minecraft.tags.BlockTags.INCORRECT_FOR_DIAMOND_TOOL;
-            }
-            @Override public net.minecraft.world.item.crafting.Ingredient getRepairIngredient() {
-                return net.minecraft.world.item.crafting.Ingredient.of(Items.DIAMOND);
-            }
-        };
-        
-        public CustomItem(Properties props) {
-            super(CUSTOM_TIER, ${Math.max(damage-4,1)}, -2.4f, props);
-        }
-        
-        /**
-         * Vuruş olayı — hedefe özel efektler uygula
-         */
-        @Override
-        public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
-            ${hasFireDmg?`
-            // Ateş hasarı uygula
-            target.setSecondsOnFire(5);
-            if (attacker.level() != null) {
-                attacker.level().broadcastEntityEvent(target, (byte) 37);
-            }`:''}
-            ${hasPoison?`
-            // Zehir efekti uygula (10 saniye, seviye 1)
-            target.addEffect(new MobEffectInstance(MobEffects.POISON, 200, 1));`:''}
-            
-            // Silahın dayanıklılığını azalt
-            stack.hurtAndBreak(1, attacker, (entity) -> 
-                entity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
-            
-            return true;
-        }
-        
-        /**
-         * Tooltip — oyuncuya bilgi göster
-         */
-        @Override
-        public void appendHoverText(ItemStack stack, @org.jetbrains.annotations.Nullable Level level,
-                                    List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-            tooltipComponents.add(Component.literal("§6⚡ ${modName}"));
-            tooltipComponents.add(Component.literal("§7Hasar: §c${damage} ❤"));
-            tooltipComponents.add(Component.literal("§7Dayanıklılık: §b${durability}"));
-            ${features.length?`tooltipComponents.add(Component.literal("§7Efektler: §d${features.join(', ')}"));`:''}
-            tooltipComponents.add(Component.literal("§8ZekaBot Pro tarafından yapıldı"));
-            super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
-        }
-    }
-}`;
+}`);
+  }
+
+  // Lang + README
+  zip.file(`src/main/resources/assets/${modId}/lang/en_us.json`,JSON.stringify({[`item.${modId}.${modId}_item`]:modName},null,2));
+  zip.file('README.md',`# ${modName}\n\nZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız\n\n## Kurulum\n1. Minecraft ${mcVer} kur\n2. ${loader==='fabric'?'Fabric Loader kur':'Forge kur'}\n3. .jar dosyasını mods/ klasörüne koy\n4. Minecraft'ı başlat\n\n## Derleme\n\`\`\`bash\n./gradlew build\n\`\`\``);
+
+  return await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
 }
 
-function buildJavaTemplate_Fabric(modId,modName,mainClassName,modType,damage,durability,features){
-return `package com.${modId};
+function showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,answers}){
+  const sz=jarBlob?Math.round(jarBlob.size/1024)+'KB':'~';
+  const fc=Math.max((generatedCode.match(/```/g)||[]).length/2,1);
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.item.*;
-import net.minecraft.text.Text;
-import net.minecraft.util.Rarity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * ${modName} - ZekaBot Pro tarafından oluşturuldu (Fabric)
- * Geliştirici: Lordyağız
- * Hasar: ${damage}, Dayanıklılık: ${durability}
- */
-public class ${mainClassName} implements ModInitializer {
-    
-    public static final String MOD_ID = "${modId}";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    
-    // Özel eşya kaydı
-    public static final SwordItem ${modId.toUpperCase()}_SWORD = Registry.register(
-        Registries.ITEM,
-        new Identifier(MOD_ID, "${modId}_sword"),
-        new SwordItem(ToolMaterials.NETHERITE, ${Math.max(damage-4,1)}, -2.4f,
-            new FabricItemSettings().maxDamage(${durability}).rarity(Rarity.RARE))
-    );
-    
-    @Override
-    public void onInitialize() {
-        LOGGER.info("${modName} başlatılıyor — ZekaBot Pro v3.1");
-        LOGGER.info("${modName} başarıyla yüklendi!");
-    }
-}`;
-}
-
-function buildReadme(modName,modId,desc,loader,mcVer,features,damage,durability){
-return `# ${modName}
-
-> ${desc}
-
-## 📦 Kurulum
-
-1. [Minecraft ${mcVer}](https://minecraft.net) kur
-2. [${loader==='forge'?'Forge':'Fabric Loader'}](${loader==='forge'?'https://files.minecraftforge.net':'https://fabricmc.net'}) kur
-3. \`${modId}-1.0.0.jar\` dosyasını \`mods/\` klasörüne koy
-4. Minecraft'ı başlat
-
-## ✨ Özellikler
-
-- **Hasar:** ${damage} ❤
-- **Dayanıklılık:** ${durability}
-${features.map(f=>`- **${f}** efekti`).join('\n')}
-
-## 🔧 Derleme
-
-\`\`\`bash
-./gradlew build
-\`\`\`
-
-## 📄 Lisans
-
-MIT License
-
----
-*ZekaBot Pro v3.1 tarafından oluşturuldu — Lordyağız*`;
-}
-
-function showMCResult({modName,modId,loader,mcVer,modType,features,damage,durability,extras,desc,generatedCode,jarBlob}){
-  const fileSize=jarBlob?Math.round(jarBlob.size/1024)+'KB':'~';
-  const filesCount=(generatedCode.match(/```/g)||[]).length/2||3;
-  
-  const wrap=document.createElement('div');
-  wrap.className='mc-wizard';
-  wrap.innerHTML=`
-  <div class="mc-wizard-card">
-    <div class="mc-wizard-head">
-      <div class="mc-wiz-icon">✅</div>
-      <div><div class="mc-wiz-title">Mod Hazır!</div>
-      <div class="mc-wiz-sub">${loader.toUpperCase()} · MC ${mcVer}</div></div>
-    </div>
-    <div class="mc-wizard-body">
-      <div class="mc-result">
-        <div class="mc-res-header">
-          <div class="mc-res-icon">⛏️</div>
-          <div>
-            <div class="mc-res-name">${esc(modName)}</div>
-            <div class="mc-res-tags">
-              <span class="mc-tag green">${loader.toUpperCase()}</span>
-              <span class="mc-tag orange">MC ${mcVer}</span>
-              <span class="mc-tag blue">${modType.toUpperCase()}</span>
-              ${features.slice(0,2).map(f=>`<span class="mc-tag green">${f}</span>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="mc-res-stats">
-          <div class="mc-stat"><div class="mc-stat-val">⚔️ ${damage}</div><div class="mc-stat-lbl">Hasar</div></div>
-          <div class="mc-stat"><div class="mc-stat-val">🔧 ${durability}</div><div class="mc-stat-lbl">Dayanıklılık</div></div>
-          <div class="mc-stat"><div class="mc-stat-val">📁 ${fileSize}</div><div class="mc-stat-lbl">Dosya Boyutu</div></div>
-        </div>
-        <div class="mc-res-desc">${esc(desc||'ZekaBot Pro tarafından oluşturuldu.')}</div>
-        <div class="mc-dl-row">
-          ${jarBlob?`<button class="mc-dl-btn" onclick="downloadJar()">⬇️ ${esc(modId)}-1.0.0.jar İndir</button>`:''}
-          <button class="mc-dl-btn-secondary" onclick="downloadCode()">📄 Java Kodu İndir (.txt)</button>
-        </div>
-        <div style="margin-top:10px;font-size:.75rem;color:var(--t3);line-height:1.7;background:var(--panel);border:1px solid var(--rim);border-radius:8px;padding:10px">
-          💡 <strong style="color:var(--t2)">Nasıl Kullanılır?</strong><br>
-          1. .jar dosyasını indirin<br>
-          2. Minecraft <code style="color:var(--mc)">.minecraft/mods/</code> klasörüne kopyalayın<br>
-          3. ${loader==='forge'?'Forge':'Fabric'} profili ile Minecraft'ı başlatın<br>
-          4. Modun aktif olduğunu göreceksiniz ✅<br>
-          <br>
-          ⚠️ <strong style="color:var(--warn)">Not:</strong> Bu mod şablonu gerçek Java kaynak kodları içerir. Derleme için IntelliJ IDEA + ${loader==='forge'?'ForgeGradle':'Fabric Loom'} gereklidir. .jar indir butonu kaynak kodlu proje dosyası indirir.
+  const rWrap=document.createElement('div');rWrap.className='mc-result-wrap';
+  if(S.cfg.anim)rWrap.style.animation='msgIn .4s ease forwards';else rWrap.style.opacity='1';
+  rWrap.innerHTML=`
+  <div class="mc-result-card">
+    <div class="mc-res-top">
+      <div class="mc-res-icon">⛏️</div>
+      <div>
+        <div class="mc-res-name">${esc(modName)}</div>
+        <div class="mc-res-tags">
+          <span class="mc-tag g">${loader.toUpperCase()}</span>
+          <span class="mc-tag o">MC ${mcVer}</span>
+          <span class="mc-tag b">${fc} Dosya</span>
         </div>
       </div>
     </div>
+    <div class="mc-res-stats">
+      <div class="mc-stat"><div class="mc-stat-val">📁 ${sz}</div><div class="mc-stat-lbl">Dosya Boyutu</div></div>
+      <div class="mc-stat"><div class="mc-stat-val">☕ Java</div><div class="mc-stat-lbl">Dil</div></div>
+      <div class="mc-stat"><div class="mc-stat-val">✅ Hazır</div><div class="mc-stat-lbl">Durum</div></div>
+    </div>
+    <div class="mc-res-desc">Modun kaynak kodu aşağıda gösterilmiştir. .jar dosyasını indirip <code style="color:var(--mc);font-family:var(--f-mono)">.minecraft/mods/</code> klasörüne atabilirsin.</div>
+    <div class="mc-dl-row">
+      ${jarBlob?`<button class="mc-dl-btn" onclick="dlJar()">⬇️ ${esc(modId)}-1.0.0.jar İndir</button>`:'<div style="font-size:.8rem;color:var(--warn)">⚠️ .jar üretilemedi, kodu el ile derle</div>'}
+      <button class="mc-dl-btn2" onclick="dlCode()">📄 Kodu İndir</button>
+    </div>
+    <div class="mc-install-tip">
+      💡 <strong>Nasıl kullanılır?</strong><br>
+      1. <code>${modId}-1.0.0.jar</code> dosyasını indir<br>
+      2. <code>.minecraft/mods/</code> klasörüne kopyala<br>
+      3. ${loader==='fabric'?'Fabric':'Forge'} profili ile Minecraft ${mcVer} başlat<br>
+      4. Mods menüsünde <strong>${modName}</strong>'i göreceksin ✅<br>
+      <br>
+      ⚠️ <strong style="color:var(--warn)">Not:</strong> İndirilen .jar kaynak kodlu proje dosyasıdır. Çalıştırmak için <code>./gradlew build</code> ile derlemelisin.
+    </div>
   </div>`;
-  
-  chat.appendChild(wrap);
-  scrollBot();
-  
-  // Store for download functions
-  window._lastJarBlob=jarBlob;
-  window._lastModId=modId;
-  window._lastModCode=generatedCode;
-  
-  // Also show the generated code in chat
-  addMsg('ai',`## ⛏️ ${modName} — Kaynak Kodu\n\n${generatedCode}\n\n---\n*ZekaBot Pro v3.1 tarafından oluşturuldu — Lordyağız*`,true);
+  chat.appendChild(rWrap);scrollBot();
+
+  window._mcJar=jarBlob;
+  window._mcId=modId;
+  window._mcCode=generatedCode;
+  window._mcName=modName;
+
+  // Kaynak kodu da göster
+  addMCMsg(`## ⛏️ ${modName} — Kaynak Kodu\n\n${generatedCode}\n\n---\n*ZekaBot Pro v3.2 — Lordyağız*`);
+  addHoverListeners();
 }
 
-function downloadJar(){
-  const blob=window._lastJarBlob;
-  const modId=window._lastModId||'mod';
-  if(!blob){toast('JAR dosyası bulunamadı!','err');return;}
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`${modId}-1.0.0.jar`;
-  a.click();URL.revokeObjectURL(url);
-  toast('JAR indiriliyor! 📦','ok');
+function dlJar(){
+  if(!window._mcJar){toast('JAR bulunamadı!','err');return;}
+  const u=URL.createObjectURL(window._mcJar);
+  const a=document.createElement('a');a.href=u;a.download=(window._mcId||'mod')+'-1.0.0.jar';
+  a.click();URL.revokeObjectURL(u);toast('JAR indiriliyor! 📦','ok');
 }
-
-function downloadCode(){
-  const code=window._lastModCode||'// Kod bulunamadı';
-  const modId=window._lastModId||'mod';
-  const blob=new Blob([code],{type:'text/plain;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`${modId}-source.txt`;
-  a.click();URL.revokeObjectURL(url);
+function dlCode(){
+  const code=window._mcCode||'// Kod bulunamadı';
+  const b=new Blob([`// ${window._mcName||'Mod'} — ZekaBot Pro v3.2 — Lordyağız\n\n`+code],{type:'text/plain;charset=utf-8'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');
+  a.href=u;a.download=(window._mcId||'mod')+'-source.txt';a.click();URL.revokeObjectURL(u);
   toast('Kaynak kodu indiriliyor!','ok');
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    IMAGE GENERATION
-═══════════════════════════════════ */
+══════════════════════ */
 async function genImg(prompt){
   addMsg('user',prompt,false);
   const gid='ig'+Date.now();
-  const row=document.createElement('div');
-  row.className='typing-row';row.id=gid;
+  const row=document.createElement('div');row.className='typing-row';row.id=gid;
   row.innerHTML=`<div class="av ai">Z</div>
     <div class="img-gen-card">
       <div class="img-spin"></div>
-      <div id="${gid}t">🎨 Görsel oluşturuluyor — Flux AI işliyor... (15-30 sn)</div>
+      <div>🎨 Görsel oluşturuluyor — Flux AI işliyor... (15-30 sn)</div>
       <div class="img-prog-wrap"><div class="img-prog-bar" id="${gid}p"></div></div>
     </div>`;
   chat.appendChild(row);scrollBot();
-
   let prog=0;
   const pb=document.getElementById(gid+'p');
-  const pi=setInterval(()=>{prog=Math.min(prog+Math.random()*3.5,90);if(pb)pb.style.width=prog+'%';},350);
-  const sty=detectStyle(prompt);
+  const pi=setInterval(()=>{prog=Math.min(prog+3,90);if(pb)pb.style.width=prog+'%';},350);
+  const sty=detectImgStyle(prompt);
   const extra=IMG_S[sty]||'';
-  const full=prompt+extra+', masterpiece, ultra detailed, best quality, 8k';
+  const full=prompt+extra+', masterpiece, ultra detailed, 8k';
   const seed=Math.floor(Math.random()*999999);
-  const W=768,H=512;
   const enc=encodeURIComponent(full);
-  const url=`https://image.pollinations.ai/prompt/${enc}?width=${W}&height=${H}&seed=${seed}&nologo=true&enhance=true&model=flux`;
-
+  const url=`https://image.pollinations.ai/prompt/${enc}?width=768&height=512&seed=${seed}&nologo=true&enhance=true&model=flux`;
   let ok=false;
   try{await preload(url,32000);ok=true;}catch{}
   clearInterval(pi);if(pb)pb.style.width='100%';
   await sleep(200);document.getElementById(gid)?.remove();
-
   const wrap=document.createElement('div');wrap.className='msg-wrap';
   if(S.cfg.anim)wrap.style.animation='msgIn .35s ease forwards';else wrap.style.opacity='1';
-
   if(ok){
     wrap.innerHTML=`<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
-      <div class="bbl ai img-bbl">
-        <img src="${url}" alt="${esc(prompt)}" loading="lazy"
-          style="opacity:0;transition:opacity .6s" onload="this.style.opacity='1'"
-          onerror="this.parentElement.innerHTML='<div class=\\'err-t\\'>⚠️ Yüklenemedi.</div>'"/>
-      </div>
-      <div class="bbl ai" style="font-size:.79rem;color:var(--t2);margin-top:5px">
-        🎨 <b>"${esc(prompt.slice(0,55)+(prompt.length>55?'...':''))}"</b>
-        &nbsp;·&nbsp;${sty}&nbsp;·&nbsp;Flux AI
-      </div>
-      <div class="msg-meta">
-        <span class="msg-t">${now()}</span>
+      <div class="bbl ai img-bbl"><img src="${url}" alt="${esc(prompt)}" loading="lazy" style="opacity:0;transition:opacity .6s" onload="this.style.opacity='1'" onerror="this.parentElement.innerHTML='<div class=\\'err-t\\'>⚠️ Yüklenemedi.</div>'"/></div>
+      <div class="bbl ai" style="font-size:.79rem;color:var(--t2);margin-top:5px">🎨 <b>"${esc(prompt.slice(0,55))}"</b> · ${sty} · Flux AI · Seed: ${seed}</div>
+      <div class="msg-meta"><span class="msg-t">${now()}</span>
         <button class="act-btn" onclick="window.open('${url}','_blank')">🔗 Tam boyut</button>
-        <button class="act-btn" onclick="dlImg('${url}','zekabot-${seed}')">⬇️ İndir</button>
+        <button class="act-btn" onclick="dlImg('${url}','img-${seed}')">⬇️ İndir</button>
       </div>
     </div></div>`;
   }else{
-    const fbUrl=`https://image.pollinations.ai/prompt/${enc}?width=512&height=512&seed=${seed}&nologo=true`;
     wrap.innerHTML=`<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
-      <div class="bbl ai">
-        <div style="margin-bottom:9px">🎨 Görsel hazır:</div>
-        <a href="${fbUrl}" target="_blank" style="color:var(--a1);font-weight:600">→ Görseli aç</a>
-        <br><img src="${fbUrl}" style="max-width:100%;border-radius:12px;margin-top:11px;display:block" loading="lazy"/>
-      </div>
+      <div class="bbl ai"><a href="${url}" target="_blank" style="color:var(--a1);font-weight:600">→ Görseli yeni sekmede aç</a>
+      <br><img src="${url}" style="max-width:100%;border-radius:12px;margin-top:11px;display:block" loading="lazy"/></div>
       <div class="msg-meta"><span class="msg-t">${now()}</span></div>
     </div></div>`;
   }
   chat.appendChild(wrap);scrollBot();
 }
-
-function detectStyle(p){
+function detectImgStyle(p){
   const l=p.toLowerCase();
   if(l.includes('anime')||l.includes('manga'))return'anime';
   if(l.includes('yağlı')||l.includes('oil'))return'oil';
-  if(l.includes('foto')||l.includes('gerçekçi')||l.includes('realistic'))return'photo';
+  if(l.includes('foto')||l.includes('realistic')||l.includes('gerçekçi'))return'photo';
   if(l.includes('sulu')||l.includes('watercolor'))return'watercolor';
   if(l.includes('cyberpunk')||l.includes('neon'))return'cyberpunk';
   if(l.includes('fantezi')||l.includes('fantasy'))return'fantasy';
-  if(l.includes('portre')||l.includes('portrait'))return'portrait';
   if(l.includes('minimal'))return'minimal';
   return'default';
 }
-function preload(url,ms){
-  return new Promise((res,rej)=>{
-    const i=new Image();const t=setTimeout(()=>{i.src='';rej(new Error('timeout'));},ms);
-    i.onload=()=>{clearTimeout(t);res(url);};i.onerror=()=>{clearTimeout(t);rej(new Error('err'));};i.src=url;
-  });
-}
+function preload(url,ms){return new Promise((res,rej)=>{const i=new Image();const t=setTimeout(()=>{i.src='';rej();},ms);i.onload=()=>{clearTimeout(t);res(url);};i.onerror=()=>{clearTimeout(t);rej();};i.src=url;});}
 async function dlImg(url,name){
   try{const r=await fetch(url);const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name+'.jpg';a.click();URL.revokeObjectURL(u);toast('İndiriliyor...','ok');}
   catch{window.open(url,'_blank');}
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    CHAT ENGINE
-═══════════════════════════════════ */
+══════════════════════ */
 async function doChat(text){
   const sys=SYS[S.mode]||SYS.chat;
-  const withHist=['chat','code','analyze','creative','debug','math','seo','mcmod'].includes(S.mode);
+  const withHist=['chat','code','analyze','creative','debug','math','seo'].includes(S.mode);
   addMsg('user',text,false);
   if(withHist){
     if(S.prov==='gemini')S.hist.push({role:'user',parts:[{text}]});
     else S.hist.push({role:'user',content:text});
   }
   showTyping();
-  let reply='',attempt=0;
-  while(attempt<3){
-    attempt++;
+  let reply='',att=0;
+  while(att<3){
+    att++;
     try{
       const msgs=withHist?S.hist:(S.prov==='gemini'?[{role:'user',parts:[{text}]}]:[{role:'user',content:text}]);
       reply=S.prov==='gemini'?await callGemini(msgs,sys):await callGroq(msgs,sys);
       if(['code','debug'].includes(S.mode))reply=await autoComplete(reply,sys);
       break;
     }catch(e){
-      if(attempt>=3){removeTyping();if(withHist)S.hist.pop();addMsg('error',fmtErr(e.message),false);toast('Hata oluştu','err');return;}
+      if(att>=3){removeTyping();if(withHist)S.hist.pop();addMsg('error',fmtErr(e.message),false);toast('Hata oluştu','err');return;}
       await sleep(1800);
     }
   }
@@ -2290,25 +1376,19 @@ async function doChat(text){
 }
 
 async function autoComplete(reply,sys){
-  const cut=reply.endsWith('...')||reply.includes('# devamı')||reply.includes('# rest of')||
-    (reply.match(/```/g)||[]).length%2!==0;
+  const cut=reply.includes('# devamı')||reply.includes('...')||(reply.match(/```/g)||[]).length%2!==0;
   if(!cut)return reply;
   toast('Kod tamamlanıyor...','warn');
   try{
-    const cont='Önceki cevabının devamını yaz. Kod bloğunu TAMAMEN bitir.';
-    if(S.prov==='gemini'){
-      const ch=[...S.hist.slice(-6),{role:'model',parts:[{text:reply}]},{role:'user',parts:[{text:cont}]}];
-      const r=await callGemini(ch,sys);return reply+'\n\n'+r;
-    }else{
-      const ch=[...S.hist.slice(-6),{role:'assistant',content:reply},{role:'user',content:cont}];
-      const r=await callGroq(ch,sys);return reply+'\n\n'+r;
-    }
+    const cont='Önceki cevabının devamını yaz. Kodu TAMAMEN bitir.';
+    if(S.prov==='gemini'){const ch=[...S.hist.slice(-4),{role:'model',parts:[{text:reply}]},{role:'user',parts:[{text:cont}]}];return reply+'\n\n'+await callGemini(ch,sys);}
+    else{const ch=[...S.hist.slice(-4),{role:'assistant',content:reply},{role:'user',content:cont}];return reply+'\n\n'+await callGroq(ch,sys);}
   }catch{return reply;}
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    API CALLS
-═══════════════════════════════════ */
+══════════════════════ */
 async function callGemini(msgs,sys){
   const clean=msgs.map(m=>({role:m.role==='model'?'model':'user',parts:m.parts||[{text:m.content||''}]}));
   const fixed=fixHist(clean);
@@ -2319,10 +1399,10 @@ async function callGemini(msgs,sys){
   try{data=await res.json();}catch{throw new Error('Yanıt okunamadı');}
   if(!res.ok)throw new Error('Gemini: '+(data.error?.message||'HTTP '+res.status));
   const cand=data.candidates?.[0];
-  if(!cand)throw new Error('Gemini: Yanıt boş geldi');
+  if(!cand)throw new Error('Gemini: Boş yanıt');
   if(cand.finishReason==='SAFETY')throw new Error('Güvenlik filtresi devreye girdi.');
   const t=cand.content?.parts?.[0]?.text;
-  if(!t)throw new Error('Gemini: Boş yanıt');
+  if(!t)throw new Error('Gemini: İçerik yok');
   return t;
 }
 function fixHist(msgs){
@@ -2348,9 +1428,9 @@ async function callGroq(msgs,sys){
   return c;
 }
 
-/* ═══════════════════════════════════
-   MESSAGE RENDERING
-═══════════════════════════════════ */
+/* ══════════════════════
+   MESSAGES
+══════════════════════ */
 function rmWelcome(){const w=document.getElementById('welcome');if(w)w.remove();}
 function addMsg(role,content,anim=true){
   const wrap=document.createElement('div');wrap.className='msg-wrap';
@@ -2361,12 +1441,11 @@ function addMsg(role,content,anim=true){
   const avCls=isUser?'av user':'av ai';
   const bCls=isErr?'bbl err':(isUser?'bbl user':'bbl ai');
   let bContent;
-  if(isErr)bContent=`<div class="err-t">⚠️ ${esc(content)}</div>`;
+  if(isErr)bContent=`<div style="color:var(--bad);font-size:.84rem">⚠️ ${esc(content)}</div>`;
   else if(isUser)bContent=esc(content).replace(/\n/g,'<br>');
   else bContent=renderMD(content);
   let meta=`<span class="msg-t">${now()}</span>`;
-  if(!isUser&&!isErr)meta+=`<button class="act-btn" onclick="cpTxt(this)" data-txt="${escAttr(content)}">📋 Kopyala</button>
-    <button class="act-btn" onclick="regenLast()">↻ Yenile</button>`;
+  if(!isUser&&!isErr)meta+=`<button class="act-btn" onclick="cpTxt(this)" data-txt="${escAttr(content)}">📋 Kopyala</button><button class="act-btn" onclick="regenLast()">↻ Yenile</button>`;
   wrap.innerHTML=`<div class="${rCls}"><div class="${avCls}">${isUser?'S':'Z'}</div>
     <div class="msg-body"><div class="${bCls}">${bContent}</div>
     <div class="msg-meta">${meta}</div></div></div>`;
@@ -2380,26 +1459,22 @@ function addCodeBtns(container){
     const lang=code.className.match(/language-(\w+)/)?.[1]||'code';
     const hd=document.createElement('div');hd.className='code-hd';
     hd.innerHTML=`<span class="lang-tag">${lang}</span><button class="copy-code-btn" onclick="cpCode(this)">📋 Kopyala</button>`;
-    pre.parentNode.insertBefore(hd,pre);hlCode(code);
+    pre.parentNode.insertBefore(hd,pre);
+    if(S.cfg.syntax)hlCode(code);
   });
 }
 function hlCode(code){
   let h=code.textContent;
   h=h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const kw=['def','class','return','import','from','if','elif','else','for','while','try','except','with','as','in','not','and','or','True','False','None','function','const','let','var','=>','async','await','export','default','public','private','static','void','new','this','int','str','bool','print','package','extends','implements','override','final','interface'];
-  kw.forEach(k=>{h=h.replace(new RegExp(`\\b${k}\\b`,'g'),`<span style="color:#7c9fff">${k}</span>`);});
+  ['public','private','static','void','class','import','package','return','new','final','extends','implements','interface','if','else','for','while','try','catch','throws','override','this','super','int','String','boolean','List','Map','null','true','false','function','const','let','var','async','await','def','print'].forEach(k=>{h=h.replace(new RegExp(`\\b${k}\\b`,'g'),`<span style="color:#7c9fff">${k}</span>`);});
   h=h.replace(/(["'`])((?:(?!\1)[^\\]|\\.)*)\1/g,'<span style="color:#a8e6a3">$1$2$1</span>');
   h=h.replace(/\b(\d+\.?\d*)\b/g,'<span style="color:#ffd47e">$1</span>');
   h=h.replace(/(#.*$|\/\/.*$)/gm,'<span style="color:#5a5a8a;font-style:italic">$1</span>');
   h=h.replace(/(\/\*[\s\S]*?\*\/)/g,'<span style="color:#5a5a8a;font-style:italic">$1</span>');
   code.innerHTML=h;
 }
-function cpCode(btn){
-  const pre=btn.closest('.code-hd').nextElementSibling;if(!pre)return;
-  cpToClip(pre.textContent);btn.textContent='✓ Kopyalandı';
-  setTimeout(()=>btn.textContent='📋 Kopyala',2200);
-}
-function cpTxt(btn){const t=btn.dataset.txt;cpToClip(t);btn.textContent='✓ Kopyalandı';setTimeout(()=>btn.textContent='📋 Kopyala',2200);}
+function cpCode(btn){const pre=btn.closest('.code-hd').nextElementSibling;if(!pre)return;cpToClip(pre.textContent);btn.textContent='✓';setTimeout(()=>btn.textContent='📋 Kopyala',2000);}
+function cpTxt(btn){cpToClip(btn.dataset.txt);btn.textContent='✓';setTimeout(()=>btn.textContent='📋 Kopyala',2000);}
 async function cpToClip(t){
   try{await navigator.clipboard.writeText(t);toast('Kopyalandı!','ok');}
   catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('Kopyalandı!','ok');}
@@ -2408,26 +1483,28 @@ async function regenLast(){
   if(S.loading||!S.hist.length)return;
   const last=[...S.hist].reverse().find(m=>m.role==='user');if(!last)return;
   const t=S.prov==='gemini'?last.parts?.[0]?.text:last.content;if(!t)return;
-  if(S.hist.length>1){S.hist.pop();const msgs=chat.querySelectorAll('.msg-wrap');if(msgs.length)msgs[msgs.length-1].remove();}
+  if(S.hist.length>1){S.hist.pop();chat.querySelectorAll('.msg-wrap')[chat.querySelectorAll('.msg-wrap').length-1]?.remove();}
   S.loading=true;sendB.disabled=true;showTyping();
   try{
     const sys=SYS[S.mode]||SYS.chat;
     const r=S.prov==='gemini'?await callGemini(S.hist,sys):await callGroq(S.hist,sys);
     removeTyping();
-    if(S.prov==='gemini')S.hist.push({role:'model',parts:[{text:r}]});
-    else S.hist.push({role:'assistant',content:r});
+    if(S.prov==='gemini')S.hist.push({role:'model',parts:[{text:r}]});else S.hist.push({role:'assistant',content:r});
     addMsg('ai',r,true);
   }catch(e){removeTyping();addMsg('error',e.message,false);}
   S.loading=false;sendB.disabled=false;
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    MARKDOWN
-═══════════════════════════════════ */
+══════════════════════ */
 function renderMD(text){
   if(!text)return'';
   let h=text;
-  h=h.replace(/```(\w+)?\n?([\s\S]*?)```/g,(_,lang,code)=>{const l=lang||'code';const ec=escInner(code.trim());return`<div class="code-hd"><span class="lang-tag">${l}</span><button class="copy-code-btn" onclick="cpCode(this)">📋 Kopyala</button></div><pre><code class="language-${l}">${ec}</code></pre>`;});
+  h=h.replace(/```(\w+)?(?:\s+[^\n]+)?\n?([\s\S]*?)```/g,(_,lang,code)=>{
+    const l=lang||'code';const ec=escInner(code.trim());
+    return`<div class="code-hd"><span class="lang-tag">${l}</span><button class="copy-code-btn" onclick="cpCode(this)">📋 Kopyala</button></div><pre><code class="language-${l}">${ec}</code></pre>`;
+  });
   h=h.replace(/`([^`\n]+)`/g,'<code>$1</code>');
   h=h.replace(/\*\*\*([\s\S]*?)\*\*\*/g,'<strong><em>$1</em></strong>');
   h=h.replace(/\*\*([\s\S]*?)\*\*/g,'<strong>$1</strong>');
@@ -2439,9 +1516,7 @@ function renderMD(text){
   h=h.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
   h=renderTables(h);
   h=h.replace(/^---+$/gm,'<hr style="border:none;border-top:1px solid var(--rim2);margin:12px 0">');
-  h=h.replace(/^\- (.+)$/gm,'<li>$1</li>');
-  h=h.replace(/^\* (.+)$/gm,'<li>$1</li>');
-  h=h.replace(/^\• (.+)$/gm,'<li>$1</li>');
+  h=h.replace(/^[\-\*\•] (.+)$/gm,'<li>$1</li>');
   h=h.replace(/(<li>[\s\S]*?<\/li>\n?)+/g,m=>`<ul>${m}</ul>`);
   h=h.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
   h=h.replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>');
@@ -2450,7 +1525,7 @@ function renderMD(text){
     h=h.replace(new RegExp(`<p>(<${tag}[^>]*>)`,'g'),'$1');
     h=h.replace(new RegExp(`(<\/${tag}>)<\/p>`,'g'),'$1');
   });
-  h=h.replace(/<p><\/p>/g,'');h=h.replace(/<br><\/p>/g,'</p>');
+  h=h.replace(/<p><\/p>/g,'').replace(/<br><\/p>/g,'</p>');
   return h;
 }
 function renderTables(text){
@@ -2458,89 +1533,72 @@ function renderTables(text){
     const rows=match.trim().split('\n');if(rows.length<2)return match;
     const isSep=r=>r.replace(/[\s|:-]/g,'')==='';
     let html='<table>';let isH=true;
-    rows.forEach(row=>{
-      if(isSep(row)){isH=false;return;}
+    rows.forEach(row=>{if(isSep(row)){isH=false;return;}
       const cells=row.split('|').filter((_,i,a)=>i>0&&i<a.length-1);
       const tag=isH?'th':'td';
       html+='<tr>'+cells.map(c=>`<${tag}>${c.trim()}</${tag}>`).join('')+'</tr>';
-    });
-    return html+'</table>';
+    });return html+'</table>';
   });
 }
 
-/* ═══════════════════════════════════
+/* ══════════════════════
    TYPING
-═══════════════════════════════════ */
+══════════════════════ */
 function showTyping(){
   const row=document.createElement('div');row.className='typing-row';row.id='typing';
   row.innerHTML=`<div class="av ai">Z</div>
-    <div class="typing-bbl">
-      <div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
-      <span class="typing-lbl">düşünüyor...</span>
-    </div>`;
-  chat.appendChild(row);scrollBot();
-  document.getElementById('stream-ind').style.display='block';
+    <div class="typing-bbl"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div>
+    <span class="typing-lbl">düşünüyor...</span></div>`;
+  chat.appendChild(row);scrollBot();document.getElementById('stream-ind').style.display='block';
 }
-function removeTyping(){
-  document.getElementById('typing')?.remove();
-  document.getElementById('stream-ind').style.display='none';
-}
+function removeTyping(){document.getElementById('typing')?.remove();document.getElementById('stream-ind').style.display='none';}
 
-/* ═══════════════════════════════════
-   CHAT CONTROL
-═══════════════════════════════════ */
+/* ══════════════════════
+   CLEAR CHAT
+══════════════════════ */
 function clearChat(confirm_=true){
   if(confirm_&&S.hist.length>0){if(!confirm('Sohbeti temizle?'))return;}
-  saveSess();S.hist=[];S.sessId=null;
+  saveSess();S.hist=[];S.sessId=null;MC.active=false;MC.hist=[];MC.stage='idle';
   chat.innerHTML='';
   const w=document.createElement('div');w.id='welcome';
   w.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;text-align:center;padding:20px;animation:wIn .5s ease forwards';
-  w.innerHTML=`<div class="hero-orb"><div class="hero-core">✓</div></div>
-    <div class="hero-title">TEMİZLENDİ</div>
-    <div class="hero-sub">Yeni bir sohbet başlatabilirsin.</div>`;
-  chat.appendChild(w);toast('Sohbet temizlendi','ok');
+  w.innerHTML=`<div class="hero-orb"><div class="hero-core">✓</div></div><div class="hero-title">TEMİZLENDİ</div><div class="hero-sub">Yeni bir sohbet başlatabilirsin.</div>`;
+  chat.appendChild(w);toast('Temizlendi','ok');
 }
 
-/* ═══════════════════════════════════
-   COMMAND PALETTE
-═══════════════════════════════════ */
+/* ══════════════════════
+   CMD PALETTE
+══════════════════════ */
 const CMDS=[
   {ico:'💬',txt:'Sohbet Modu',desc:'Normal sohbet',fn:()=>setMode('chat')},
   {ico:'🎨',txt:'Görsel Oluştur',desc:'Flux AI ile görsel üret',fn:()=>setMode('image')},
-  {ico:'⛏️',txt:'MC Mod Sihirbazı',desc:'Minecraft mod oluştur + .jar indir',fn:()=>{setMode('mcmod');startMCWizard();}},
-  {ico:'🧱',txt:'MC Blok Modu',desc:'Hızlı blok modu oluştur',fn:()=>mcQuick('block')},
-  {ico:'⚔️',txt:'MC Eşya Modu',desc:'Silah / eşya modu',fn:()=>mcQuick('item')},
-  {ico:'👾',txt:'MC Yaratık Modu',desc:'Mob / boss modu',fn:()=>mcQuick('mob')},
+  {ico:'⛏️',txt:'Minecraft Mod Yap',desc:'AI sorular sorar, .jar üretir',fn:()=>startMCMode()},
   {ico:'💻',txt:'Tam Kod Modu',desc:'Eksiksiz kod üretimi',fn:()=>setMode('code')},
-  {ico:'🌐',txt:'Çeviri',desc:'30+ dil çevirisi',fn:()=>setMode('translate')},
+  {ico:'🌐',txt:'Çeviri',desc:'30+ dil',fn:()=>setMode('translate')},
   {ico:'📝',txt:'Özetleme',desc:'Uzun metni özetle',fn:()=>setMode('summarize')},
-  {ico:'🔍',txt:'Derin Analiz',desc:'SWOT + kapsamlı analiz',fn:()=>setMode('analyze')},
-  {ico:'✍️',txt:'Yaratıcı Yazı',desc:'Şiir, hikaye, içerik',fn:()=>setMode('creative')},
-  {ico:'🐛',txt:'Debug Modu',desc:'Kodu analiz et + düzelt',fn:()=>setMode('debug')},
+  {ico:'🔍',txt:'Derin Analiz',desc:'SWOT + analiz',fn:()=>setMode('analyze')},
+  {ico:'✍️',txt:'Yaratıcı Yazı',desc:'Şiir, hikaye',fn:()=>setMode('creative')},
+  {ico:'🐛',txt:'Debug Modu',desc:'Kodu düzelt',fn:()=>setMode('debug')},
   {ico:'🧮',txt:'Matematik',desc:'Adım adım çözüm',fn:()=>setMode('math')},
   {ico:'📈',txt:'SEO Modu',desc:'İçerik optimizasyonu',fn:()=>setMode('seo')},
-  {ico:'＋',txt:'Yeni Sohbet',desc:'Yeni oturum',fn:()=>{closeCMD();newSession();}},
+  {ico:'＋',txt:'Yeni Sohbet',desc:'Oturumu sıfırla',fn:()=>{closeCMD();newSession();}},
   {ico:'🗑️',txt:'Temizle',desc:'Sohbeti sil',fn:()=>{closeCMD();clearChat();}},
   {ico:'📤',txt:'Dışa Aktar',desc:'Sohbeti kaydet',fn:()=>{closeCMD();exportChat();}},
-  {ico:'⚙️',txt:'Ayarlar',desc:'Uygulama ayarları',fn:()=>{closeCMD();openSettings();}},
-  {ico:'🔑',txt:'API Değiştir',desc:'Farklı anahtar',fn:()=>{closeCMD();changeKey();}},
+  {ico:'⚙️',txt:'Ayarlar',fn:()=>{closeCMD();openSettings();}},
+  {ico:'🔑',txt:'API Değiştir',fn:()=>{closeCMD();changeKey();}},
 ];
 let cmdSel=0;
 function openCMD(){document.getElementById('cmd-overlay').classList.add('open');document.getElementById('cmd-inp').value='';document.getElementById('cmd-inp').focus();renderCMD(CMDS);cmdSel=0;}
 function closeCMD(){document.getElementById('cmd-overlay').classList.remove('open');}
-function filterCMD(q){if(!q.trim()){renderCMD(CMDS);return;}const f=CMDS.filter(c=>c.txt.toLowerCase().includes(q.toLowerCase())||c.desc.toLowerCase().includes(q.toLowerCase()));renderCMD(f);}
+function filterCMD(q){if(!q.trim()){renderCMD(CMDS);return;}const f=CMDS.filter(c=>c.txt.toLowerCase().includes(q.toLowerCase())||(c.desc||'').toLowerCase().includes(q.toLowerCase()));renderCMD(f);}
 function renderCMD(items){
   const list=document.getElementById('cmd-list');list.innerHTML='';
   items.forEach((item,i)=>{
     const d=document.createElement('div');d.className='cmd-item'+(i===cmdSel?' sel':'');
-    d.innerHTML=`<span class="cmd-item-ico">${item.ico}</span><div class="cmd-item-info"><div class="cmd-item-txt">${item.txt}</div><div class="cmd-item-desc">${item.desc}</div></div>`;
+    d.innerHTML=`<span class="cmd-item-ico">${item.ico}</span><div class="cmd-item-info"><div class="cmd-item-txt">${item.txt}</div>${item.desc?`<div class="cmd-item-desc">${item.desc}</div>`:''}</div>`;
     d.onclick=()=>{item.fn();closeCMD();};list.appendChild(d);
   });
 }
-
-/* ═══════════════════════════════════
-   KEYBOARD SHORTCUTS
-═══════════════════════════════════ */
 function initKeys(){
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('cmd-overlay').classList.contains('open')?closeCMD():openCMD();}
@@ -2555,27 +1613,19 @@ function initKeys(){
 }
 function updCMDSel(items){items.forEach((el,i)=>el.classList.toggle('sel',i===cmdSel));items[cmdSel]?.scrollIntoView({block:'nearest'});}
 
-/* ═══════════════════════════════════
-   TOAST
-═══════════════════════════════════ */
+/* ══════════════════════
+   TOAST & UTILS
+══════════════════════ */
 function toast(msg,type=''){
   const c=document.getElementById('toasts');
   const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;
   c.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
   setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),380);},3200);
 }
-
-/* ═══════════════════════════════════
-   SOUND
-═══════════════════════════════════ */
 function playBeep(){
   if(!S.cfg.sound)return;
   try{const ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(900,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(450,ctx.currentTime+.12);g.gain.setValueAtTime(.12,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.28);o.start();o.stop(ctx.currentTime+.28);}catch{}
 }
-
-/* ═══════════════════════════════════
-   UTILS
-═══════════════════════════════════ */
 function scrollBot(){if(S.cfg.scroll)chat.scrollTo({top:chat.scrollHeight,behavior:'smooth'});}
 function now(){return new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -2584,7 +1634,7 @@ function fmtErr(msg){
   if(m.toLowerCase().includes('failed to fetch'))return`🌐 Bağlantı hatası — API'ye ulaşılamıyor.\n${m}`;
   if(m.includes('401')||m.includes('403'))return`🔑 API anahtarı geçersiz!\n${m}`;
   if(m.includes('429'))return`⏱️ Rate limit! Bekle veya farklı API anahtarı kullan.\n${m}`;
-  if(m.includes('SAFETY'))return`🛡️ İçerik güvenlik filtresine takıldı.`;
+  if(m.includes('SAFETY'))return`🛡️ Güvenlik filtresi devreye girdi.`;
   return m;
 }
 function esc(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
