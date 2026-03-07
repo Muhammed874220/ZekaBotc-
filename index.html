@@ -2216,6 +2216,18 @@ function fmtErr(msg){
 function esc(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function escInner(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(t){if(!t)return'';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+/* ═══════════ GLOBAL EXPORTS (onclick erişimi için) ═══════════ */
+Object.assign(window,{
+  selProv,toggleEye,testConn,launch,changeKey,
+  openApp,clearChat,openSettings,closeSettings,openCMD,closeCMD,
+  toggleSB,newSession,exportChat,nuke,
+  switchModel,chTemp,setMode,startMCMode,focusInput,
+  toggleStudio,selStyle,go,qSend,
+  togSet,filterCMD,
+  dlJar,dlCode,dlImg,cpCode,cpTxt,regenLast,
+  addHoverL
+});
 </script>
 </body>
 </html>
