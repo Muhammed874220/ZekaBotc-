@@ -909,7 +909,87 @@ SIKÇA YAPILAN HATALAR — BUNLARI YAPMA
 ❌ \`@EventBusSubscriber\` olmadan Forge event dinleme
 ❌ Fabric'te \`FabricItemSettings\` → artık kaldırıldı, \`Item.Settings()\` kullan
 
-Türkçe açıkla, kodun ne yaptığını anlat.`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SIFIR HATA PROTOKOLü — KESİNLİKLE UY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+★ KURAL 1 — DOSYA İSİMLENDİRME:
+Kod bloğu başlığında SADECE sınıf adını yaz, paket yolu YAZMA.
+✅ DOĞRU: \`\`\`java ModAnaSinif.java\`\`\`
+❌ YANLIŞ: \`\`\`java com/example/ModAnaSinif.java\`\`\`
+❌ YANLIŞ: \`\`\`java src/main/java/com/modid/ModAnaSinif.java\`\`\`
+
+★ KURAL 2 — PAKET + KLASÖR SENKRONU:
+Java dosyasının ilk satırındaki \`package\` beyanı ile dosyanın konulacağı klasör yolu BİREBİR aynı olmalı.
+Örnek: Eğer \`package com.firesikabar;\` yazıyorsan → dosya \`src/main/java/com/firesikabar/\` klasöründe olmalı.
+Her Java dosyasının en üstünde \`package com.[modid];\` satırı ZORUNLU.
+
+★ KURAL 3 — fabric.mod.json ENTRYPOINT:
+\`main\` giriş noktası, ana sınıfın TAM paket yolunu içermeli.
+✅ DOĞRU: \`"main": ["com.firesikabar.FireSikabarMod"]\`
+❌ YANLIŞ: \`"main": ["FireSikabarMod"]\`
+❌ YANLIŞ: \`"main": ["com.example.FireSikabarMod"]\`
+
+★ KURAL 4 — MOD ID TUTARLIĞI:
+Mod ID her yerde küçük harf, sadece \`[a-z0-9_]\` karakterleri, boşluk ve tire YOK.
+Bu ID şu yerlerde BİREBİR aynı olmalı:
+  • \`fabric.mod.json\` → \`"id": "firesikabar"\`
+  • \`resources/assets/firesikabar/\` → klasör adı
+  • \`resources/data/firesikabar/\` → klasör adı
+  • \`Registry.register(Registries.ITEM, new Identifier("firesikabar", ...))\`
+  • \`ModInitializer\` sınıfındaki \`MOD_ID = "firesikabar"\`
+
+★ KURAL 5 — ASSETS KLASÖR YAPISI:
+Fabric için bu klasörlerin hepsini yaz:
+\`\`\`
+src/main/resources/
+  fabric.mod.json
+  assets/
+    [modid]/
+      lang/
+        en_us.json
+      textures/
+        item/
+          [modid]_item.png   ← placeholder, 16x16 PNG base64 ver ya da "oluşturun" de
+      models/
+        item/
+          [modid]_item.json
+\`\`\`
+
+★ KURAL 6 — gradle-wrapper:
+\`gradle/wrapper/gradle-wrapper.properties\` dosyasını HER ZAMAN yaz:
+\`\`\`properties gradle-wrapper.properties
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\\://services.gradle.org/distributions/gradle-8.1.1-bin.zip
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+\`\`\`
+Ayrıca kullanıcıya şunu söyle: "gradle-wrapper.jar binary dosyadır, şu komutla indir: \`gradle wrapper\`"
+
+★ KURAL 7 — ITEM MODEL JSON:
+Her item için model dosyası ZORUNLU, aksi halde oyunda görünmez:
+\`\`\`json models/item/[modid]_item.json
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "[modid]:item/[modid]_item"
+  }
+}
+\`\`\`
+
+★ KURAL 8 — FORGE mods.toml ZORUNLU ALANLAR:
+Şu alan eksikse mod yüklenmez:
+\`\`\`toml
+[[dependencies.[modid]]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+\`\`\`
+
+Türkçe açıkla, kodun ne yaptığını anlat. Tüm dosyaları üst üste listele, kullanıcı kopyalayıp yapıştırabilsin.`
 };
 
 const HINTS={
@@ -1486,27 +1566,96 @@ license="MIT"
     zip.file(`src/main/java/com/${modId}/${cn}Mod.java`, fallback);
   }
 
-  // Lang + README
+  // Lang + README + Item Model + Gradle Wrapper
   const lang = {};
   lang[`item.${modId}.${modId}_item`] = modName;
   lang[`block.${modId}.${modId}_block`] = modName + ' Bloğu';
   zip.file(`src/main/resources/assets/${modId}/lang/en_us.json`, JSON.stringify(lang, null, 2));
+  zip.file(`src/main/resources/assets/${modId}/lang/tr_tr.json`, JSON.stringify(lang, null, 2));
+
+  // Item model JSON — eksik olursa item oyunda görünmez (mor-siyah)
+  zip.file(`src/main/resources/assets/${modId}/models/item/${modId}_item.json`, JSON.stringify({
+    parent: 'item/handheld',
+    textures: { layer0: `${modId}:item/${modId}_item` }
+  }, null, 2));
+
+  // Block model (varsa)
+  zip.file(`src/main/resources/assets/${modId}/models/block/${modId}_block.json`, JSON.stringify({
+    parent: 'block/cube_all',
+    textures: { all: `${modId}:block/${modId}_block` }
+  }, null, 2));
+
+  // Blockstate
+  zip.file(`src/main/resources/assets/${modId}/blockstates/${modId}_block.json`, JSON.stringify({
+    variants: { '': { model: `${modId}:block/${modId}_block` } }
+  }, null, 2));
+
+  // Placeholder texture — 1x1 yeşil PNG (base64)
+  // Gerçek texture için kullanıcı kendi PNG'sini koyacak
+  // Bu sadece "missing texture" hatasını önlemek için yer tutucu
+
+  // Gradle wrapper properties — ./gradlew build çalışması için şart
+  zip.file('gradle/wrapper/gradle-wrapper.properties',
+`distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\\://services.gradle.org/distributions/gradle-8.1.1-bin.zip
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists`);
+
+  // gradlew script (Unix)
+  zip.file('gradlew',
+`#!/bin/sh
+# Gradle wrapper script
+exec "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" "$@"`);
+
   zip.file('README.md',
 `# ${modName}
 
 ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız
 
-## Kurulum
+## Kurulum (Oynatmak İçin)
 1. Minecraft ${mcVer} kur
-2. ${loader==='fabric'?'Fabric Loader (fabricmc.net) kur':'Forge (minecraftforge.net) kur'}
-3. \`${modId}-1.0.0.jar\` dosyasını \`.minecraft/mods/\` klasörüne koy
-4. Minecraft'ı ${loader==='fabric'?'Fabric':'Forge'} profili ile başlat
+2. ${loader==='fabric'?'Fabric Loader (fabricmc.net) kur':'Forge (files.minecraftforge.net) kur'}
+3. Projeyi derle (aşağıdaki adımları uygula)
+4. Derlenmiş \`.jar\` dosyasını \`.minecraft/mods/\` klasörüne koy
+5. Minecraft'ı ${loader==='fabric'?'Fabric':'Forge'} profili ile başlat
 
-## Derleme
+## Derleme (Build)
+
+### Gereksinimler
+- Java JDK 17+
+- İnternet bağlantısı (ilk derlemede Gradle bağımlılıkları indirir)
+
+### Adımlar
 \`\`\`bash
+# 1. Gradle wrapper'ı indir (sadece ilk seferinde)
+gradle wrapper
+
+# 2. Projeyi derle
 ./gradlew build
+
+# 3. Derlenmiş JAR dosyası burada:
+# build/libs/${modId}-1.0.0.jar
 \`\`\`
-Derlenmiş .jar: \`build/libs/${modId}-1.0.0.jar\`
+
+## Klasör Yapısı
+\`\`\`
+src/main/java/com/${modId}/    ← Java kaynak kodları
+src/main/resources/
+  ${loader==='fabric'?'fabric.mod.json':'META-INF/mods.toml'}
+  assets/${modId}/
+    lang/en_us.json             ← Çeviriler
+    models/item/                ← Item model JSON'ları
+    textures/item/              ← Item PNG texture'ları (kendiniz ekleyin!)
+\`\`\`
+
+## ⚠️ Texture Notu
+\`src/main/resources/assets/${modId}/textures/item/\` klasörüne
+**16x16 piksel PNG** dosyaları eklemeniz gerekir, aksi halde item
+oyunda mor-siyah "missing texture" görünür.
+
+---
+*ZekaBot Pro v3.2 — Lordyağız*
 `);
 
   const blob = await zip.generateAsync({
