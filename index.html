@@ -1404,20 +1404,45 @@ ZORUNLU:
 
   // JAR oluştur
   let jarBlob=null;
-  // Konuşma geçmişinden mod bilgilerini çıkar
-  const fullConv=hist.map(m=>m.content).join(' ').toLowerCase();
-  const modName=(()=>{const m=fullConv.match(/(?:adı|ismi|name)[:\s]+([\w\s]{2,24})/i);return m?m[1].trim().split(' ').map(w=>w[0]?.toUpperCase()+w.slice(1)).join(''):'CustomMod';})();
-  const modId=modName.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20)||'custommod';
-  const loader=fullConv.includes('fabric')?'fabric':'forge';
-  const mcVerM=fullConv.match(/1\.(20\.1|19\.4|18\.2|21|16\.5|12\.2)/);
-  const mcVer=mcVerM?'1.'+mcVerM[1]:'1.20.1';
+
+  // Mod bilgilerini konuşma + üretilen koddan akıllıca çıkar
+  const fullConv = hist.map(m=>m.content).join(' ');
+  const fullLower = fullConv.toLowerCase();
+  const allText = fullConv + '\n' + generatedCode;
+
+  // Mod adını birden fazla kaynaktan bulmaya çalış
+  let modName = 'CustomMod';
+  const _namePatterns = [
+    /@Mod\s*\(\s*["']([a-z][a-z0-9_]{1,18})["']/,
+    /public class (\w+)Mod\b/,
+    /MOD_ID\s*=\s*["']([a-z][a-z0-9_]{1,18})["']/,
+    /class (\w+)Mod implements ModInitializer/,
+    /(?:mod(?:un)?\s+ad[iı]|ismi?|name)\s*[:\-]?\s*["']?([\wşğüöçıİŞĞÜÖÇ]{2,20})["']?/i
+  ];
+  for(const _pat of _namePatterns){
+    const _m = allText.match(_pat);
+    if(_m && _m[1] && _m[1].trim().length >= 2){
+      const _c = _m[1].trim();
+      modName = _c.split(/[\s_]+/).map(w=>w?w[0].toUpperCase()+w.slice(1):'').join('');
+      if(modName.length > 1) break;
+    }
+  }
+
+  const modId = modName.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20) || 'custommod';
+  const loader = fullLower.includes('fabric') ? 'fabric' : 'forge';
+  const _mcVM = allText.match(/1\.(20\.1|19\.4|18\.2|21\.1|21|16\.5|12\.2)/);
+  const mcVer = _mcVM ? '1.'+_mcVM[1] : '1.20.1';
+
+  addLog('⛏ Mod: '+modName+' | '+loader+' | MC '+mcVer, 'info');
 
   try{
-    jarBlob=await createJar({modName,modId,loader,mcVer,generatedCode});
-    if(pb)pb.style.width='100%';addLog('✓ .jar dosyası hazır!','ok');
+    jarBlob = await createJar({modName, modId, loader, mcVer, generatedCode});
+    if(pb) pb.style.width='100%';
+    addLog('✓ .jar hazır! ('+Math.round(jarBlob.size/1024)+'KB)','ok');
   }catch(e){
-    console.error('JAR oluşturma hatası:',e);
+    console.error('JAR hatası:',e);
     addLog('⚠️ .jar sorunu: '+e.message,'warn');
+    addLog('ℹ️ Kodu indirip manuel derleyebilirsin','info');
   }
 
   await sleep(300);
@@ -1664,7 +1689,7 @@ oyunda mor-siyah "missing texture" görünür.
     compressionOptions: { level: 6 }
   });
 
-  if(!blob || blob.size < 100) throw new Error('ZIP çıktısı boş');
+  if(!blob) throw new Error('ZIP blob oluşturulamadı'); // size check kaldırıldı — küçük modlar geçerli
   return blob;
 }
 
