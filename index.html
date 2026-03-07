@@ -1360,14 +1360,14 @@ async function buildMCMod(hist){
   await sleep(500);addLog('⟳ AI ile Java kodu üretiliyor...','info');
   if(sub)sub.textContent='AI Java kodu yazıyor...';
 
-  // Kod üret
-  // Konuşmadan yapılandırılmış bilgi çıkar
+  // Kod üret — tüm değişkenler tek blokta, çakışma yok
   const convText = hist.map(m=>(m.role==='user'?'Kullanıcı':'Asistan')+': '+m.content.replace(/\[ANLAMSIZ CEVAP[^\]]*\]/g,'')).join('\n');
-  
-  // Loader ve sürümü otomatik tespit et
-  const allText = convText.toLowerCase();
-  const detectedLoader = allText.includes('fabric') ? 'Fabric' : 'Forge';
-  const verMatch = allText.match(/1\.(20\.1|19\.4|18\.2|21|16\.5|12\.2)/);
+  const histRaw = hist.map(m=>m.content).join(' ');
+
+  // Loader ve sürümü tespit et (kod üretmeden önce)
+  const convLower = convText.toLowerCase();
+  const detectedLoader = convLower.includes('fabric') ? 'Fabric' : 'Forge';
+  const verMatch = convLower.match(/1\.(20\.1|19\.4|18\.2|21\.1|21|16\.5|12\.2)/);
   const detectedVer = verMatch ? '1.'+verMatch[1] : '1.20.1';
 
   const codePrompt=`Aşağıdaki kullanıcı sohbetinden bir Minecraft modu yap:
@@ -1402,37 +1402,42 @@ ZORUNLU:
   if(sub)sub.textContent='.jar dosyası oluşturuluyor...';
   await sleep(300);addLog('⟳ .jar dosyası oluşturuluyor...','info');
 
-  // JAR oluştur
+  // JAR oluştur — mod bilgilerini üretilen koddan + geçmişten çıkar
   let jarBlob=null;
+  const jarSearchText = histRaw + '\n' + generatedCode;
 
-  // Mod bilgilerini konuşma + üretilen koddan akıllıca çıkar
-  const fullConv = hist.map(m=>m.content).join(' ');
-  const fullLower = fullConv.toLowerCase();
-  const allText = fullConv + '\n' + generatedCode;
-
-  // Mod adını birden fazla kaynaktan bulmaya çalış
   let modName = 'CustomMod';
-  const _namePatterns = [
+  const namePatterns = [
     /@Mod\s*\(\s*["']([a-z][a-z0-9_]{1,18})["']/,
     /public class (\w+)Mod\b/,
     /MOD_ID\s*=\s*["']([a-z][a-z0-9_]{1,18})["']/,
     /class (\w+)Mod implements ModInitializer/,
-    /(?:mod(?:un)?\s+ad[iı]|ismi?|name)\s*[:\-]?\s*["']?([\wşğüöçıİŞĞÜÖÇ]{2,20})["']?/i
+    /(?:mod(?:un)?\s+ad[iı]|ismi?|name)\s*[:\-]?\s*["']?([\w\u015f\u011f\xfc\xf6\xe7\u0131]{2,20})["']?/i
   ];
-  for(const _pat of _namePatterns){
-    const _m = allText.match(_pat);
-    if(_m && _m[1] && _m[1].trim().length >= 2){
-      const _c = _m[1].trim();
-      modName = _c.split(/[\s_]+/).map(w=>w?w[0].toUpperCase()+w.slice(1):'').join('');
+  for(const np of namePatterns){
+    const nm = jarSearchText.match(np);
+    if(nm && nm[1] && nm[1].trim().length >= 2){
+      modName = nm[1].trim().split(/[\s_]+/).map(w=>w?w[0].toUpperCase()+w.slice(1):'').join('');
       if(modName.length > 1) break;
     }
   }
 
   const modId = modName.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,20) || 'custommod';
-  const loader = fullLower.includes('fabric') ? 'fabric' : 'forge';
-  const _mcVM = allText.match(/1\.(20\.1|19\.4|18\.2|21\.1|21|16\.5|12\.2)/);
-  const mcVer = _mcVM ? '1.'+_mcVM[1] : '1.20.1';
+  const loader = convLower.includes('fabric') ? 'fabric' : 'forge';
+  const mcVerFinal = jarSearchText.match(/1\.(20\.1|19\.4|18\.2|21\.1|21|16\.5|12\.2)/);
+  const mcVer = mcVerFinal ? '1.'+mcVerFinal[1] : '1.20.1';
 
+  addLog('⛏ Mod: '+modName+' | '+loader+' | MC '+mcVer, 'info');
+
+  try{
+    jarBlob = await createJar({modName, modId, loader, mcVer, generatedCode});
+    if(pb) pb.style.width='100%';
+    addLog('✓ .jar hazır! ('+Math.round(jarBlob.size/1024)+'KB)','ok');
+  }catch(e){
+    console.error('JAR hatası:',e);
+    addLog('⚠️ .jar sorunu: '+e.message,'warn');
+    addLog('ℹ️ Kodu indirip manuel derleyebilirsin','info');
+  }
   addLog('⛏ Mod: '+modName+' | '+loader+' | MC '+mcVer, 'info');
 
   try{
