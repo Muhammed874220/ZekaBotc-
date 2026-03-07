@@ -850,12 +850,22 @@ SIKÇA YAPILAN HATALAR — YAPMA
 ❌ package satırı eksik Java dosyalarında
 
 ━━━━━━━━━━━━━━━━━━━━━━
-DOSYA YAPISI
+DOSYA YAPISI VE İSİMLENDİRME
 ━━━━━━━━━━━━━━━━━━━━━━
+KOD BLOĞU BAŞLIĞI:
+• Sadece sınıf adını yaz (PascalCase): \`\`\`java OreVisionMod.java
+• ASLA yol prefix'i yazma: ❌ com/mymod/OreVisionMod.java
+• ASLA src/ prefix'i yazma: ❌ src/main/java/com/mymod/OreVisionMod.java
+
 Her Java dosyasında:
-• package com.[modid]; ← ZORUNLU
+• package com.[modid]; ← ZORUNLU, ilk satır
 • Tüm importlar tam yazılmalı
-• Sınıf adı dosya adıyla aynı olmalı
+• Sınıf adı dosya adıyla birebir aynı olmalı (OreVisionMod.java → public class OreVisionMod)
+
+Klasör yapısı (sisteme otomatik eklenir, sen sadece dosya adını yaz):
+• Java dosyaları → src/main/java/com/[modid]/ClassName.java
+• fabric.mod.json → src/main/resources/fabric.mod.json
+• mods.toml → src/main/resources/META-INF/mods.toml
 
 fabric.mod.json entrypoint: "com.[modid].[ModAdi]Mod" — tam yol zorunlu
 
@@ -1589,25 +1599,39 @@ ZekaBot Pro v4.0 — Lordyağız tarafından oluşturuldu.
     const isProp=b.lang==='properties'||b.name?.endsWith('.properties');
 
     if(isJava){
-      let fname=b.name||(i===0?`${cn}Mod.java`:`${cn}${i}.java`);
-      fname=fname.replace(/^.*[\/\\]/,'').replace(/[^\w.]/g,'')||`Class${i}.java`;
+      // Sadece ClassName.java — PascalCase, yol prefix'i asla olmaz
+      let fname=b.name||'';
+      // Eger yol prefix varsa sadece son parcayi al (com/mymod/Foo.java -> Foo.java)
+      fname=fname.replace(/^.*[\/\\]/,'').replace(/[^\w.]/g,'');
+      // Isim hala yoksa kod icinden public class adini cikart
+      if(!fname||!fname.endsWith('.java')){
+        const cm=b.code.match(/public\s+(?:class|interface|enum)\s+(\w+)/);
+        fname=cm?cm[1]+'.java':(i===0?cn+'Mod.java':cn+'Class'+i+'.java');
+      }
+      fname=fname.replace(/[^\w.]/g,'');
       if(!fname.endsWith('.java'))fname+='.java';
-      zip.file(`src/main/java/com/${modId}/${fname}`,b.code);
+      zip.file('src/main/java/com/'+modId+'/'+fname,b.code);
       javaAdded++;
     }else if(isJson&&b.name){
+      const rawName=b.name.replace(/^.*[\/\\]/,'');
       if(b.name.includes('recipe')||b.name.includes('crafting')){
-        zip.file(`src/main/resources/data/${modId}/recipes/${b.name.replace(/^.*[\/\\]/,'')}`,b.code);
-      }else if(b.name.includes('model')){
-        zip.file(`src/main/resources/assets/${modId}/models/item/${b.name.replace(/^.*[\/\\]/,'')}`,b.code);
+        zip.file('src/main/resources/data/'+modId+'/recipes/'+rawName,b.code);
+      }else if(b.name.includes('model/item')||b.name.includes('models/item')){
+        zip.file('src/main/resources/assets/'+modId+'/models/item/'+rawName,b.code);
+      }else if(b.name.includes('model/block')||b.name.includes('models/block')){
+        zip.file('src/main/resources/assets/'+modId+'/models/block/'+rawName,b.code);
       }else if(b.name.includes('blockstate')){
-        zip.file(`src/main/resources/assets/${modId}/blockstates/${b.name.replace(/^.*[\/\\]/,'')}`,b.code);
-      }else if(b.name.includes('lang')||b.name.includes('en_us')||b.name.includes('tr_tr')){
-        zip.file(`src/main/resources/assets/${modId}/lang/${b.name.replace(/^.*[\/\\]/,'')}`,b.code);
-      }else if(b.name.endsWith('.json')){
-        zip.file(`src/main/resources/${b.name}`,b.code);
+        zip.file('src/main/resources/assets/'+modId+'/blockstates/'+rawName,b.code);
+      }else if(b.name.includes('lang')||rawName==='en_us.json'||rawName==='tr_tr.json'){
+        zip.file('src/main/resources/assets/'+modId+'/lang/'+rawName,b.code);
+      }else if(rawName==='fabric.mod.json'){
+        zip.file('src/main/resources/fabric.mod.json',b.code);
+      }else{
+        zip.file('src/main/resources/'+rawName,b.code);
       }
     }else if(isToml&&b.name){
-      zip.file(`src/main/resources/META-INF/${b.name.replace(/^.*[\/\\]/,'')}`,b.code);
+      const rawName=b.name.replace(/^.*[\/\\]/,'');
+      zip.file('src/main/resources/META-INF/'+rawName,b.code);
     }
   });
 
@@ -1654,34 +1678,69 @@ ZekaBot Pro v4.0 — Lordyağız tarafından oluşturuldu.
     result:{item:`${modId}:${modId}_item`,count:1}
   },null,2));
 
-  // Gradle wrapper
+  // Gradle wrapper — tum dosyalar dahil
   zip.file('gradle/wrapper/gradle-wrapper.properties',
-`distributionBase=GRADLE_USER_HOME
-distributionPath=wrapper/dists
-distributionUrl=https\\://services.gradle.org/distributions/gradle-8.1.1-bin.zip
-zipStoreBase=GRADLE_USER_HOME
-zipStorePath=wrapper/dists`);
+'distributionBase=GRADLE_USER_HOME\n'+
+'distributionPath=wrapper/dists\n'+
+'distributionUrl=https\\\\://services.gradle.org/distributions/gradle-8.1.1-bin.zip\n'+
+'zipStoreBase=GRADLE_USER_HOME\n'+
+'zipStorePath=wrapper/dists\n'+
+'networkTimeout=10000\n'+
+'validateDistributionUrl=true');
 
-  // gradlew
-  zip.file('gradlew',
-`#!/bin/sh
-APP_HOME="$(cd "$(dirname "$0")" && pwd)"
-APP_BASE_NAME=$(basename "$0")
-CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
-exec java \\
-  -classpath "$CLASSPATH" \\
-  org.gradle.wrapper.GradleWrapperMain \\
-  "$@"`);
+  // gradlew (Unix/Mac/Linux)
+  const gradlewContent=[
+    '#!/bin/sh',
+    '# ZekaBot Pro v4.0 — Lordyagiz',
+    'set -e',
+    'APP_HOME="$(cd "$(dirname \"$0\")" && pwd -P)"',
+    'APP_BASE_NAME=$(basename "$0")',
+    'DEFAULT_JVM_OPTS=\'-Xmx64m\' \'-Xms64m\'',
+    'CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar',
+    'exec "$JAVA_HOME/bin/java" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS \\',
+    '  -classpath "$CLASSPATH" \\',
+    '  org.gradle.wrapper.GradleWrapperMain \\',
+    '  "$@"'
+  ].join('\n');
+  zip.file('gradlew', gradlewContent, {unixPermissions:'755'});
 
-  // gradlew.bat
-  zip.file('gradlew.bat',
-`@rem Gradle startup script for Windows
-@if "%DEBUG%"=="" @echo off
-@setlocal
-set DIRNAME=%~dp0
-set CLASSPATH=%DIRNAME%\\gradle\\wrapper\\gradle-wrapper.jar
-java -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
-@endlocal`);
+  // gradlew.bat (Windows)
+  const gradlewBatContent=[
+    '@rem ZekaBot Pro v4.0 — Lordyagiz',
+    '@if "%DEBUG%"=="" @echo off',
+    '@setlocal',
+    'set DIRNAME=%~dp0',
+    'if "%DIRNAME%"=="" set DIRNAME=.',
+    '@rem Set local scope for the variables with windows NT shell',
+    'set APP_BASE_NAME=%~n0',
+    'set APP_HOME=%DIRNAME%',
+    'set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"',
+    'set CLASSPATH=%APP_HOME%\\gradle\\wrapper\\gradle-wrapper.jar',
+    '%JAVA_EXE% %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*',
+    ':end',
+    '@endlocal'
+  ].join('\r\n');
+  zip.file('gradlew.bat', gradlewBatContent);
+
+  // gradle-wrapper.jar — NOT: Bu binary dosyadir, ZIP icine eklenemiyor.
+  // Bunun yerine get-wrapper.sh ve get-wrapper.bat script'leri ekliyoruz.
+  // Kullanici bu scriptleri calistirarak jar'i indirebilir.
+  zip.file('get-wrapper.sh',
+'#!/bin/sh\n'+
+'# gradle-wrapper.jar dosyasini indir\n'+
+'echo "gradle-wrapper.jar indiriliyor..."\n'+
+'mkdir -p gradle/wrapper\n'+
+'curl -L -o gradle/wrapper/gradle-wrapper.jar \\\n'+
+'  https://github.com/gradle/gradle/raw/v8.1.1/gradle/wrapper/gradle-wrapper.jar\n'+
+'echo "Tamamlandi! Simdi: ./gradlew build"\n');
+
+  zip.file('get-wrapper.bat',
+'@echo off\r\n'+
+'echo gradle-wrapper.jar indiriliyor...\r\n'+
+'if not exist gradle\\wrapper mkdir gradle\\wrapper\r\n'+
+'curl -L -o gradle\\wrapper\\gradle-wrapper.jar ^\r\n'+
+'  https://github.com/gradle/gradle/raw/v8.1.1/gradle/wrapper/gradle-wrapper.jar\r\n'+
+'echo Tamamlandi! Simdi: gradlew.bat build\r\n');
 
   // .gitignore
   zip.file('.gitignore',
@@ -1708,8 +1767,12 @@ run/
 
 ### 2. gradle-wrapper.jar indir
 \`\`\`bash
-# Proje klasöründe çalıştır
-gradle wrapper
+# Linux / Mac
+chmod +x get-wrapper.sh
+./get-wrapper.sh
+
+# Windows
+get-wrapper.bat
 \`\`\`
 
 ### 3. Projeyi derle
@@ -1786,11 +1849,17 @@ function showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,qualityS
     </div>
     <div class="mc-install-tip">
       <strong>🛠️ Kurulum Adımları:</strong><br>
-      1. ZIP'i indir ve çıkart<br>
-      2. <code>gradle wrapper</code> komutunu çalıştır (gradle-wrapper.jar indirir)<br>
-      3. <code>./gradlew build</code> (Linux/Mac) veya <code>gradlew.bat build</code> (Windows)<br>
-      4. <code>build/libs/${modId}-1.0.0.jar</code> dosyasını <code>.minecraft/mods/</code> klasörüne koy<br>
-      5. ${loader==='fabric'?'<a href="https://fabricmc.net" target="_blank">Fabric Loader</a>':'<a href="https://files.minecraftforge.net" target="_blank">Forge</a>'} yüklü MC ${mcVer} başlat ✅<br>
+      1. ZIP'i indir ve klasöre çıkart<br>
+      2. <code>get-wrapper.sh</code> (Linux/Mac) veya <code>get-wrapper.bat</code> (Windows) çalıştır → gradle-wrapper.jar indirir<br>
+      3. <code>chmod +x gradlew &amp;&amp; ./gradlew build</code> (Linux/Mac)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<code>gradlew.bat build</code> (Windows)<br>
+      4. <code>build/libs/${modId}-1.0.0.jar</code> → <code>.minecraft/mods/</code> klasörüne koy<br>
+      5. ${loader==='fabric'?'<a href="https://fabricmc.net" target="_blank" style="color:var(--violet2)">Fabric Loader</a>':'<a href="https://files.minecraftforge.net" target="_blank" style="color:var(--violet2)">Forge</a>'} yüklü MC ${mcVer} başlat ✅<br>
+      <br>
+      <strong>📁 Proje Yapısı:</strong><br>
+      <code>src/main/java/com/${modId}/</code> ← Java kaynak dosyaları<br>
+      <code>src/main/resources/</code> ← ${loader==='fabric'?'fabric.mod.json':'META-INF/mods.toml'} + assets<br>
+      <code>gradle/wrapper/</code> ← gradle-wrapper.properties (jar get-wrapper ile indirilir)<br>
       <br>
       <strong>⚠️ Texture:</strong> <code>src/main/resources/assets/${modId}/textures/item/</code> klasörüne 16×16 PNG koy, aksi halde item mor-siyah görünür.
     </div>
