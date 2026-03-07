@@ -1399,8 +1399,35 @@ ZORUNLU:
 
   clearInterval(pi);if(pb)pb.style.width='88%';
   addLog('✓ Java kodu üretildi!','ok');
+
+  // ── OTOMATİK HATA TESPİT + DÜZELTME ──
+  if(sub)sub.textContent='Kod kalite kontrolü yapılıyor...';
+  await sleep(200);
+
+  const codeErrors = detectCodeErrors(generatedCode, detectedLoader);
+  if(codeErrors.length > 0){
+    addLog('⚠️ '+codeErrors.length+' potansiyel hata bulundu, düzeltiliyor...','warn');
+    codeErrors.forEach(e=>addLog('  → '+e,'warn'));
+
+    const fixPrompt = `Bu Minecraft ${detectedLoader} kodunda şu hatalar var:\n\n${codeErrors.map((e,i)=>(i+1)+'. '+e).join('\n')}\n\nKOD:\n${generatedCode}\n\nTÜM HATALARI DÜZELTEREk kodun TAMAMEN ÇALIŞAN versiyonunu yaz. Sadece kodu yaz, açıklama ekleme.`;
+
+    try{
+      const fixed = S.prov==='gemini'
+        ?await callGemini([{role:'user',parts:[{text:fixPrompt}]}],SYS.mcBuild)
+        :await callGroq([{role:'user',content:fixPrompt}],SYS.mcBuild);
+      if(fixed && fixed.length > 100){
+        generatedCode = fixed;
+        addLog('✓ Kod otomatik düzeltildi!','ok');
+      }
+    }catch(e){
+      addLog('ℹ️ Otomatik düzeltme başarısız, orijinal kod kullanılıyor','info');
+    }
+  } else {
+    addLog('✓ Kod kalite kontrolü geçti','ok');
+  }
+
   if(sub)sub.textContent='.jar dosyası oluşturuluyor...';
-  await sleep(300);addLog('⟳ .jar dosyası oluşturuluyor...','info');
+  await sleep(200);addLog('⟳ .jar dosyası oluşturuluyor...','info');
 
   // JAR oluştur — mod bilgilerini üretilen koddan + geçmişten çıkar
   let jarBlob=null;
@@ -1458,6 +1485,52 @@ ZORUNLU:
 
   // Reset MC state
   MC.stage='idle';
+}
+
+/* ══════════════════════════════════
+   OTOMATİK KOD HATA TESPİTİ
+══════════════════════════════════ */
+function detectCodeErrors(code, loader){
+  const errors = [];
+  const isForge = loader === 'Forge' || loader === 'forge';
+  const isFabric = loader === 'Fabric' || loader === 'fabric';
+
+  if(isForge){
+    if(/\bPlayerEntity\b/.test(code))           errors.push("Forge: PlayerEntity yok -> Player kullan");
+    if(/\bStatusEffectInstance\b/.test(code))   errors.push("Forge: StatusEffectInstance yok -> MobEffectInstance kullan");
+    if(/\bStatusEffects\./.test(code))          errors.push("Forge: StatusEffects yok -> MobEffects kullan");
+    if(/\bTypedActionResult\b/.test(code))      errors.push("Forge: TypedActionResult yok -> InteractionResultHolder kullan");
+    if(/\.maxDamage\(/.test(code))              errors.push("Forge: maxDamage() yok -> durability() kullan");
+    if(/new Item\.Properties\(\)[^)]*\.damage\(/.test(code)) errors.push("Item.Properties(): damage() metodu yok");
+    if(/\bFabricItemSettings\b/.test(code))     errors.push("Forge: FabricItemSettings yok -> Item.Properties() kullan");
+    if(/import net\.fabricmc/.test(code))        errors.push("Forge kodunda Fabric importu var - yanlis loader");
+    if(/\bonUse\s*\(/.test(code))              errors.push("onUse() yok -> use() kullan");
+    if(/net\.minecraft\.entity\.player\.Player[^E]/.test(code)) errors.push("Forge Player import yolu yanlis: net.minecraft.world.entity.player.Player olmali");
+    if(/DeferredRegister/.test(code) && !/ForgeRegistries/.test(code)) errors.push("DeferredRegister var ama ForgeRegistries import edilmemis");
+  }
+
+  if(isFabric){
+    if(/\bMobEffectInstance\b/.test(code))      errors.push("Fabric: MobEffectInstance yok -> StatusEffectInstance kullan");
+    if(/\bMobEffects\./.test(code))             errors.push("Fabric: MobEffects yok -> StatusEffects kullan");
+    if(/\bInteractionResultHolder\b/.test(code)) errors.push("Fabric: InteractionResultHolder yok -> TypedActionResult kullan");
+    if(/new Item\.Properties\(\)/.test(code))  errors.push("Fabric: Item.Properties() yok -> Item.Settings() kullan");
+    if(/Item\.Settings[^)]*\.durability\(/.test(code)) errors.push("Fabric Item.Settings: durability() yok -> maxDamage() kullan");
+    if(/import net\.minecraftforge/.test(code))  errors.push("Fabric kodunda Forge importu var - yanlis loader");
+    if(/\bFabricItemSettings\b/.test(code))     errors.push("FabricItemSettings kaldirildi -> Item.Settings() kullan");
+    if(/net\.minecraft\.world\.entity\.player/.test(code)) errors.push("Fabric Player yolu yanlis -> net.minecraft.entity.player.PlayerEntity olmali");
+    if(!/implements ModInitializer/.test(code) && !/ModInitializer/.test(code)) errors.push("Fabric: ana sinif ModInitializer implement etmeli");
+    if(!/onInitialize/.test(code))               errors.push("Fabric: onInitialize() metodu eksik");
+  }
+
+  if(/```/.test(code))                           errors.push("Kodda islenmemis markdown backtick var");
+  if(/\/\/ \.\.\.|TODO|FIXME|devamı|placeholder/i.test(code)) errors.push("Kodda eksik/placeholder kisim var");
+
+  const javaClasses = (code.match(/public class \w+/g) || []).length;
+  const pkgLines = (code.match(/^package /gm) || []).length;
+  if(javaClasses > 0 && pkgLines === 0)          errors.push("Hic package satiri yok");
+  if(javaClasses > pkgLines && pkgLines > 0)     errors.push(javaClasses+" sinif var ama "+pkgLines+" package satiri - bazi siniflarda eksik");
+
+  return errors;
 }
 
 async function createJar({modName,modId,loader,mcVer,generatedCode}){
@@ -1632,11 +1705,25 @@ distributionUrl=https\\://services.gradle.org/distributions/gradle-8.1.1-bin.zip
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists`);
 
-  // gradlew script (Unix)
-  zip.file('gradlew',
-`#!/bin/sh
-# Gradle wrapper script
-exec "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" "$@"`);
+  // gradlew (Unix/Mac)
+  zip.file('gradlew', [
+    '#!/bin/sh',
+    'APP_HOME="$(cd "$(dirname \"$0\")" && pwd)"',
+    'CLASSPATH="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"',
+    'exec java -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"'
+  ].join('\n'));
+
+  // gradlew.bat (Windows)
+  zip.file('gradlew.bat', [
+    '@rem Gradle startup script for Windows',
+    '@if "%DEBUG%"=="" @echo off',
+    '@setlocal',
+    'set DIRNAME=%~dp0',
+    'set CLASSPATH=%DIRNAME%\\gradle\\wrapper\\gradle-wrapper.jar',
+    'java -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*',
+    '@endlocal'
+  ].join('\n'));
+
 
   zip.file('README.md',
 `# ${modName}
@@ -1658,15 +1745,24 @@ ZekaBot Pro v3.2 tarafından oluşturuldu — Lordyağız
 
 ### Adımlar
 \`\`\`bash
-# 1. Gradle wrapper'ı indir (sadece ilk seferinde)
-gradle wrapper
-
-# 2. Projeyi derle
+# Linux / Mac
+chmod +x gradlew
 ./gradlew build
-
-# 3. Derlenmiş JAR dosyası burada:
-# build/libs/${modId}-1.0.0.jar
 \`\`\`
+
+\`\`\`bat
+# Windows
+gradlew.bat build
+\`\`\`
+
+\`\`\`
+# Derlenmiş JAR:
+build/libs/${modId}-1.0.0.jar
+\`\`\`
+
+> **Not:** İlk çalıştırmada gradle-wrapper.jar indirilmesi gerekir.
+> Eğer hata alırsanız: \`gradle wrapper\` komutunu önce çalıştırın.
+
 
 ## Klasör Yapısı
 \`\`\`
