@@ -753,6 +753,10 @@ GENEL ZORUNLU KURALLAR
 5. Türkçe yorum satırları ekle
 6. Crafting tarifi JSON dosyası ekle (resources/data/modid/recipes/)
 7. en_us.json lang dosyası ekle
+8. PAKET ADINI ASLA com.example YAPMA — her zaman com.[modid] kullan (örn: com.orevision)
+9. Tüm Java dosyalarında package satırı com.[modid] ile başlamalı
+10. fabric.mod.json / mods.toml entrypoint: com.[modid].[ModAdi]Mod formatında
+11. gradle-wrapper.jar için kullanıcıya talimat ver (binary, ZIP içine eklenemiyor)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FORGE 1.20.1 — DOĞRU API KULLANIMI
@@ -1383,7 +1387,10 @@ ZORUNLU:
 - ${detectedLoader === 'Fabric' ? 'Fabric metodlarını kullan: PlayerEntity, StatusEffectInstance, StatusEffects, TypedActionResult, maxDamage(), use()' : 'Forge metodlarını kullan: Player, MobEffectInstance, MobEffects, InteractionResultHolder, durability(), use()'}
 - Yanlış loader metodunu KULLANMA — Fabric/Forge karıştırma
 - Tüm import satırlarını yaz, hiçbirini atlama
-- Tüm dosyaları eksiksiz yaz`;
+- Tüm dosyaları eksiksiz yaz
+- PAKET ADI: asla com.example kullanma, her zaman com.${modId} kullan
+- ENTRYPOİNT: fabric.mod.json veya mods.toml'da com.${modId}.${cn}Mod olmalı
+- gradle-wrapper.jar binary dosyadır, ZIP'e eklenemiyor — kullanıcıya "gradle wrapper" komutunu çalıştırmasını söyle`;
 
   let generatedCode='';
   try{
@@ -1495,6 +1502,12 @@ function detectCodeErrors(code, loader){
   const isForge = loader === 'Forge' || loader === 'forge';
   const isFabric = loader === 'Fabric' || loader === 'fabric';
 
+  // com.example paket adı kontrolü — kesinlikle yasak
+  if(/package\s+com\.example/.test(code))
+    errors.push("KRITIK: package com.example kullanilmis! com.[modid] olmali (orn: com.orevision)");
+  if(/com\.example/.test(code))
+    errors.push("KRITIK: com.example referansi var - gercek mod paketiyle degistir");
+
   if(isForge){
     if(/\bPlayerEntity\b/.test(code))           errors.push("Forge: PlayerEntity yok -> Player kullan");
     if(/\bStatusEffectInstance\b/.test(code))   errors.push("Forge: StatusEffectInstance yok -> MobEffectInstance kullan");
@@ -1529,6 +1542,10 @@ function detectCodeErrors(code, loader){
   const pkgLines = (code.match(/^package /gm) || []).length;
   if(javaClasses > 0 && pkgLines === 0)          errors.push("Hic package satiri yok");
   if(javaClasses > pkgLines && pkgLines > 0)     errors.push(javaClasses+" sinif var ama "+pkgLines+" package satiri - bazi siniflarda eksik");
+
+  // com.example yasak — her zaman projenin kendi modId'si kullanilmali
+  if(/package com\.example/.test(code))         errors.push("com.example paket adi YASAK - com.[modid] kullan (ornek: com.orevision)");
+  if(/import com\.example/.test(code))          errors.push("com.example import YASAK - projenin kendi paket adini kullan");
 
   return errors;
 }
@@ -1725,6 +1742,36 @@ zipStorePath=wrapper/dists`);
   ].join('\n'));
 
 
+  // setup.bat — Windows kurulum scripti
+  zip.file('setup.bat',
+    '@echo off\r\n' +
+    'echo ZekaBot Pro - Mod Build Setup\r\n' +
+    'echo ================================\r\n' +
+    'where gradle >nul 2>&1\r\n' +
+    'if %ERRORLEVEL% neq 0 (\r\n' +
+    '  echo HATA: Gradle yuklu degil! gradle.org/install\r\n' +
+    '  pause & exit /b 1\r\n' +
+    ')\r\n' +
+    'echo [1] gradle-wrapper.jar indiriliyor...\r\n' +
+    'gradle wrapper --gradle-version 8.1.1\r\n' +
+    'echo [2] Derleniyor...\r\n' +
+    'call gradlew.bat build\r\n' +
+    'if %ERRORLEVEL% equ 0 (echo BASARILI! build/libs/ klasorune bakin) else (echo DERLEME HATASI)\r\n' +
+    'pause');
+
+  // setup.sh — Linux/Mac kurulum scripti
+  zip.file('setup.sh',
+    '#!/bin/bash\n' +
+    'echo "ZekaBot Pro - Mod Build Setup"\n' +
+    'echo "================================"\n' +
+    'command -v gradle &>/dev/null || { echo "HATA: Gradle yuklu degil! gradle.org/install"; exit 1; }\n' +
+    'echo "[1] gradle-wrapper.jar indiriliyor..."\n' +
+    'gradle wrapper --gradle-version 8.1.1\n' +
+    'chmod +x gradlew\n' +
+    'echo "[2] Derleniyor..."\n' +
+    './gradlew build && echo "BASARILI! build/libs/ klasorune bakin" || echo "DERLEME HATASI"');
+
+
   zip.file('README.md',
 `# ${modName}
 
@@ -1830,7 +1877,13 @@ function showMCResult({modName,modId,loader,mcVer,generatedCode,jarBlob,answers}
       3. ${loader==='fabric'?'Fabric':'Forge'} profili ile Minecraft ${mcVer} başlat<br>
       4. Mods menüsünde <strong>${modName}</strong>'i göreceksin ✅<br>
       <br>
-      ⚠️ <strong style="color:var(--warn)">Not:</strong> İndirilen .jar kaynak kodlu proje dosyasıdır. Çalıştırmak için <code>./gradlew build</code> ile derlemelisin.
+      ⚠️ <strong style="color:var(--warn)">Not:</strong> İndirilen .jar kaynak kodlu proje dosyasıdır. Derlemek için aşağıdaki adımları uygula.<br><br>
+      <strong>1️⃣ gradle-wrapper.jar indir:</strong><br>
+      <code style="display:block;margin:4px 0;padding:6px 8px;background:var(--ink3);border-radius:6px;font-size:.72rem">gradle wrapper</code>
+      (veya <a href="https://services.gradle.org/distributions/gradle-8.1.1-bin.zip" target="_blank" style="color:var(--a1)">Gradle 8.1.1</a> kur, sonra çalıştır)<br><br>
+      <strong>2️⃣ Projeyi derle:</strong><br>
+      <code style="display:block;margin:4px 0;padding:6px 8px;background:var(--ink3);border-radius:6px;font-size:.72rem">./gradlew build &nbsp;&nbsp;# Linux/Mac<br>gradlew.bat build &nbsp;# Windows</code><br>
+      <strong>3️⃣ JAR:</strong> <code>build/libs/[modid]-1.0.0.jar</code> → <code>.minecraft/mods/</code> klasörüne koy
     </div>
   </div>`;
   chat.appendChild(rWrap);scrollBot();
