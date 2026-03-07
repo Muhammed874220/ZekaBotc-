@@ -1388,8 +1388,8 @@ ZORUNLU:
 - Yanlış loader metodunu KULLANMA — Fabric/Forge karıştırma
 - Tüm import satırlarını yaz, hiçbirini atlama
 - Tüm dosyaları eksiksiz yaz
-- PAKET ADI: asla com.example kullanma, her zaman com.${modId} kullan
-- ENTRYPOİNT: fabric.mod.json veya mods.toml'da com.${modId}.${cn}Mod olmalı
+- PAKET ADI: asla com.example kullanma! Her zaman modun adına göre com.[modadin] kullan (orn: com.orevision, com.firesikabar)
+- ENTRYPOİNT: fabric.mod.json icinde "main": ["com.[modadin].[ModAdi]Mod"] — tam paket yolu zorunlu
 - gradle-wrapper.jar binary dosyadır, ZIP'e eklenemiyor — kullanıcıya "gradle wrapper" komutunu çalıştırmasını söyle`;
 
   let generatedCode='';
@@ -1407,30 +1407,25 @@ ZORUNLU:
   clearInterval(pi);if(pb)pb.style.width='88%';
   addLog('✓ Java kodu üretildi!','ok');
 
-  // ── OTOMATİK HATA TESPİT + DÜZELTME ──
-  if(sub)sub.textContent='Kod kalite kontrolü yapılıyor...';
-  await sleep(200);
+  // ── KOD TEMİZLEME — AI bazen JS/TS syntax bırakır, temizle ──
+  // "export default", "export class", "export function" → Java'da geçersiz
+  generatedCode = generatedCode
+    .replace(/^export\s+default\s+/gm, '')
+    .replace(/^export\s+(class|function|const|let|var)\s+/gm, '$1 ');
 
-  const codeErrors = detectCodeErrors(generatedCode, detectedLoader);
-  if(codeErrors.length > 0){
-    addLog('⚠️ '+codeErrors.length+' potansiyel hata bulundu, düzeltiliyor...','warn');
-    codeErrors.forEach(e=>addLog('  → '+e,'warn'));
-
-    const fixPrompt = `Bu Minecraft ${detectedLoader} kodunda şu hatalar var:\n\n${codeErrors.map((e,i)=>(i+1)+'. '+e).join('\n')}\n\nKOD:\n${generatedCode}\n\nTÜM HATALARI DÜZELTEREk kodun TAMAMEN ÇALIŞAN versiyonunu yaz. Sadece kodu yaz, açıklama ekleme.`;
-
-    try{
-      const fixed = S.prov==='gemini'
-        ?await callGemini([{role:'user',parts:[{text:fixPrompt}]}],SYS.mcBuild)
-        :await callGroq([{role:'user',content:fixPrompt}],SYS.mcBuild);
-      if(fixed && fixed.length > 100){
-        generatedCode = fixed;
-        addLog('✓ Kod otomatik düzeltildi!','ok');
-      }
-    }catch(e){
-      addLog('ℹ️ Otomatik düzeltme başarısız, orijinal kod kullanılıyor','info');
+  // ── HATA TESPİT (sadece log, API çağrısı yok — takılmayı önler) ──
+  if(sub)sub.textContent='Kod kontrol ediliyor...';
+  await sleep(100);
+  try{
+    const codeErrors = detectCodeErrors(generatedCode, detectedLoader);
+    if(codeErrors.length > 0){
+      addLog('⚠️ '+codeErrors.length+' uyarı (JAR yine de oluşturuluyor)','warn');
+      codeErrors.slice(0,3).forEach(e=>addLog('  '+e,'warn'));
+    } else {
+      addLog('✓ Kod kontrolü geçti','ok');
     }
-  } else {
-    addLog('✓ Kod kalite kontrolü geçti','ok');
+  }catch(ce){
+    addLog('ℹ️ Kod kontrolü atlandı','info');
   }
 
   if(sub)sub.textContent='.jar dosyası oluşturuluyor...';
@@ -1536,6 +1531,7 @@ function detectCodeErrors(code, loader){
   }
 
   if(/```/.test(code))                           errors.push("Kodda islenmemis markdown backtick var");
+  if(/^export\s+(default|class|function)/m.test(code)) errors.push("Java'da 'export' keyword yok - JS/TS kodu uretilmis olabilir");
   if(/\/\/ \.\.\.|TODO|FIXME|devamı|placeholder/i.test(code)) errors.push("Kodda eksik/placeholder kisim var");
 
   const javaClasses = (code.match(/public class \w+/g) || []).length;
