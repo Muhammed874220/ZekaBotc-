@@ -1890,73 +1890,158 @@ function dlCode(){
   toast('Kaynak kodu indiriliyor!','ok');
 }
 
-/* ═══════════ IMAGE GEN ═══════════ */
-async function genImg(prompt){
-  addMsg('user',prompt,false);
-  const gid='ig'+Date.now();
-  const row=document.createElement('div');row.className='typing-row';row.id=gid;
-  row.innerHTML=`<div class="av ai">Z</div>
+/* ═══════════ IMAGE GEN — Stable Diffusion (çoklu endpoint) ═══════════ */
+const SD_ENDPOINTS = [
+  // Hugging Face Spaces — ücretsiz SD inference
+  'https://stabilityai-stable-diffusion-2-1.hf.space/run/predict',
+  'https://runwayml-stable-diffusion-v1-5.hf.space/run/predict',
+  'https://hysts-stable-diffusion-v2-1.hf.space/run/predict',
+];
+
+async function callSDEndpoint(endpoint, prompt, negPrompt, steps, cfg) {
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      data: [prompt, negPrompt, cfg, steps, Math.floor(Math.random() * 999999)]
+    })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  // HF Spaces base64 veya URL döndürür
+  const output = data?.data?.[0];
+  if (!output) throw new Error('Boş yanıt');
+  return output; // base64 veya URL
+}
+
+async function genImg(prompt) {
+  addMsg('user', prompt, false);
+  const gid = 'ig' + Date.now();
+  const row = document.createElement('div'); row.className = 'typing-row'; row.id = gid;
+  row.innerHTML = `<div class="av ai">Z</div>
     <div class="img-gen-card">
       <div class="img-spin"></div>
-      <div>🎨 Görsel oluşturuluyor — Flux AI (15-30 sn)</div>
+      <div>🎨 Görsel oluşturuluyor — Stable Diffusion (20-40 sn)</div>
       <div class="img-prog-wrap"><div class="img-prog-bar" id="${gid}p"></div></div>
     </div>`;
-  chat.appendChild(row);scrollBot();
+  chat.appendChild(row); scrollBot();
 
-  let prog=0;
-  const pb=document.getElementById(gid+'p');
-  const pi=setInterval(()=>{prog=Math.min(prog+2.5,88);if(pb)pb.style.width=prog+'%';},300);
+  let prog = 0;
+  const pb = document.getElementById(gid + 'p');
+  const pi = setInterval(() => { prog = Math.min(prog + 1.5, 88); if (pb) pb.style.width = prog + '%'; }, 400);
 
-  const sty=detectImgStyle(prompt);
-  const extra=IMG_S[sty]||'';
-  const full=prompt+extra+', masterpiece, ultra detailed, 8k';
-  const seed=Math.floor(Math.random()*999999);
-  const enc=encodeURIComponent(full);
-  const url=`https://image.pollinations.ai/prompt/${enc}?width=768&height=512&seed=${seed}&nologo=true&enhance=true&model=flux`;
+  const sty = detectImgStyle(prompt);
+  const stylePromptMap = {
+    default: 'masterpiece, best quality, highly detailed, 8k',
+    anime: 'anime style, vibrant colors, masterpiece, best quality',
+    oil: 'oil painting style, textured brushstrokes, classical art',
+    photo: 'photorealistic, DSLR photo, hyperrealistic, sharp focus',
+    watercolor: 'watercolor painting, soft edges, flowing colors',
+    digital: 'digital concept art, CG art, highly detailed',
+    cyberpunk: 'cyberpunk style, neon lights, dark atmosphere',
+    fantasy: 'epic fantasy art, magical, dramatic lighting',
+    minimal: 'minimalist art, flat design, clean lines'
+  };
 
-  let ok=false;
-  try{await preload(url,32000);ok=true;}catch{}
+  const sizeMap = {
+    '768x512': [768, 512], '512x768': [512, 768],
+    '512x512': [512, 512], '1024x576': [1024, 576]
+  };
+  const sizeSel = document.getElementById('img-size')?.value || '512x512';
+  const [imgW, imgH] = sizeMap[sizeSel] || [512, 512];
 
-  clearInterval(pi);if(pb)pb.style.width='100%';
-  await sleep(200);document.getElementById(gid)?.remove();
+  const fullPrompt = prompt + ', ' + (stylePromptMap[sty] || stylePromptMap.default);
+  const negPrompt = 'blurry, bad anatomy, bad hands, text, watermark, deformed, ugly, low quality, nsfw';
+  const steps = 25;
+  const cfgScale = 7;
 
-  const wrap=document.createElement('div');wrap.className='msg-wrap';
-  if(S.cfg.anim)wrap.style.animation='msgIn .35s ease forwards';else wrap.style.opacity='1';
+  // Pollinations fallback (yedek) — rate limit olmayan endpoint
+  const seed = Math.floor(Math.random() * 999999);
+  const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${imgW}&height=${imgH}&seed=${seed}&nologo=true&model=flux&nofeed=true`;
 
-  if(ok){
-    wrap.innerHTML=`<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
-      <div class="bbl ai img-bbl"><img src="${url}" alt="${esc(prompt)}" loading="lazy" style="opacity:0;transition:opacity .6s" onload="this.style.opacity='1'" onerror="this.parentElement.innerHTML='<div style=color:red>⚠️ Yüklenemedi.</div>'"/></div>
-      <div class="bbl ai" style="font-size:.76rem;color:var(--text2);margin-top:4px">🎨 <b>"${esc(prompt.slice(0,55))}"</b> · ${sty} · Flux · Seed: ${seed}</div>
+  // Önce Pollinations dene, olmadı HF Spaces dene
+  let imgSrc = null;
+  let usedEndpoint = 'pollinations';
+
+  clearInterval(pi); if (pb) pb.style.width = '90%';
+
+  try {
+    // Pollinations'a istek at ama timeout koy
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 35000);
+    const testRes = await fetch(pollinationsUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (testRes.ok) {
+      const blob = await testRes.blob();
+      imgSrc = URL.createObjectURL(blob);
+      usedEndpoint = 'Flux (Pollinations)';
+    } else throw new Error('rate limit');
+  } catch (e) {
+    // Pollinations başarısız → Stable Diffusion XL endpoint dene
+    try {
+      const sdRes = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inputs: fullPrompt,
+          parameters: { negative_prompt: negPrompt, num_inference_steps: steps, guidance_scale: cfgScale, width: Math.min(imgW, 1024), height: Math.min(imgH, 1024) }
+        })
+      });
+      if (sdRes.ok) {
+        const blob = await sdRes.blob();
+        if (blob.type.startsWith('image/')) {
+          imgSrc = URL.createObjectURL(blob);
+          usedEndpoint = 'Stable Diffusion XL';
+        } else throw new Error('model loading');
+      } else throw new Error('HF ' + sdRes.status);
+    } catch (e2) {
+      // Son çare: farklı Pollinations seed ile tekrar dene
+      try {
+        const seed2 = Math.floor(Math.random() * 999999) + 100000;
+        const url2 = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${imgW}&height=${imgH}&seed=${seed2}&nologo=true&model=turbo&nofeed=true`;
+        const r2 = await fetch(url2);
+        if (r2.ok) { imgSrc = URL.createObjectURL(await r2.blob()); usedEndpoint = 'Pollinations Turbo'; }
+        else throw new Error('all failed');
+      } catch {
+        // Hiçbiri çalışmadı
+      }
+    }
+  }
+
+  if (pb) pb.style.width = '100%';
+  await sleep(200);
+  document.getElementById(gid)?.remove();
+
+  const wrap = document.createElement('div'); wrap.className = 'msg-wrap';
+  if (S.cfg.anim) wrap.style.animation = 'msgIn .35s ease forwards'; else wrap.style.opacity = '1';
+
+  if (imgSrc) {
+    wrap.innerHTML = `<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
+      <div class="bbl ai img-bbl"><img src="${imgSrc}" alt="${esc(prompt)}" loading="lazy" style="opacity:0;transition:opacity .6s" onload="this.style.opacity='1'"/></div>
+      <div class="bbl ai" style="font-size:.76rem;color:var(--text2);margin-top:4px">🎨 <b>"${esc(prompt.slice(0, 55))}"</b> · ${sty} · ${usedEndpoint} · ${imgW}×${imgH}</div>
       <div class="msg-meta"><span class="msg-t">${now()}</span>
-        <button class="act-btn" onclick="window.open('${url}','_blank')">🔗 Tam boyut</button>
-        <button class="act-btn" onclick="dlImg('${url}','img-${seed}')">⬇️ İndir</button>
+        <button class="act-btn" onclick="dlImgBlob('${imgSrc}','img-${seed}')">⬇️ İndir</button>
       </div>
     </div></div>`;
-  }else{
-    wrap.innerHTML=`<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
-      <div class="bbl ai"><a href="${url}" target="_blank" style="color:var(--violet2);font-weight:600">→ Görseli yeni sekmede aç</a>
-      <br><img src="${url}" style="max-width:100%;border-radius:11px;margin-top:9px;display:block" loading="lazy"/></div>
+  } else {
+    wrap.innerHTML = `<div class="msg-row"><div class="av ai">Z</div><div class="msg-body">
+      <div class="bbl err">
+        ⚠️ Görsel üretilemedi — tüm sunucular meşgul.<br>
+        <span style="font-size:.78rem;color:var(--text3)">Birkaç saniye bekleyip tekrar dene veya daha kısa bir prompt kullan.</span><br>
+        <a href="https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${imgW}&height=${imgH}&seed=${seed}&nologo=true" target="_blank" style="color:var(--violet2);font-size:.8rem">→ Direkt linke tıkla</a>
+      </div>
       <div class="msg-meta"><span class="msg-t">${now()}</span></div>
     </div></div>`;
   }
-  chat.appendChild(wrap);scrollBot();
+  chat.appendChild(wrap); scrollBot();
 }
 
-function detectImgStyle(p){
-  const l=p.toLowerCase();
-  if(l.includes('anime')||l.includes('manga'))return'anime';
-  if(l.includes('yağlı')||l.includes('oil'))return'oil';
-  if(l.includes('foto')||l.includes('realistic')||l.includes('gerçekçi'))return'photo';
-  if(l.includes('sulu')||l.includes('watercolor'))return'watercolor';
-  if(l.includes('cyberpunk')||l.includes('neon'))return'cyberpunk';
-  if(l.includes('fantezi')||l.includes('fantasy'))return'fantasy';
-  if(l.includes('minimal'))return'minimal';
-  return'default';
+async function dlImgBlob(src, name) {
+  try {
+    const a = document.createElement('a'); a.href = src; a.download = name + '.jpg'; a.click();
+    toast('İndiriliyor...', 'ok');
+  } catch { toast('İndirme başarısız', 'err'); }
 }
-function preload(url,ms){return new Promise((res,rej)=>{const i=new Image();const t=setTimeout(()=>{i.src='';rej();},ms);i.onload=()=>{clearTimeout(t);res(url);};i.onerror=()=>{clearTimeout(t);rej();};i.src=url;});}
-async function dlImg(url,name){
-  try{const r=await fetch(url);const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name+'.jpg';a.click();URL.revokeObjectURL(u);toast('İndiriliyor...','ok');}
-  catch{window.open(url,'_blank');}
 }
 
 /* ═══════════ CHAT ENGINE ═══════════ */
@@ -2300,3 +2385,4 @@ Object.assign(window,{
 </script>
 </body>
 </html>
+
